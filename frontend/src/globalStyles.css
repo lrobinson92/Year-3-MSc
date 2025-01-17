@@ -1,0 +1,149 @@
+/* globalStyles.css */
+body {
+    background-color: #111049;
+    color: #F2F2F7;
+    font-family: 'Koh Santepheap', sans-serif; /* Optional: Change the font */
+}
+
+.home-page {
+    background-color: #F2F2F7;
+    min-height: 100vh;
+}
+
+a {
+    color: #111049; /* Link color */
+}
+
+a:hover {
+    font-weight: bold; /* make the link bold */
+}
+
+p {
+    color: #111049; 
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #111049; /* Header color */
+}
+
+.white { /* override p for home page */
+    color: #F2F2F7;
+}
+
+/* Top Banner Image with Slanted Effect */
+.image-container {
+    position: relative;
+    overflow: hidden;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+.slanted-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: skewY(-5deg);
+    transform-origin: top left;
+}
+
+/* Style for all buttons */
+.btn {
+    background-color: #111049; /* Navy blue background */
+    border-color: #111049; /* Matching border */
+    color: white; /* White text */
+    border-radius: 4px; /* Rounded corners */
+    padding: 0.5rem 1rem; /* Optional: Adjust padding for consistent sizing */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+/* Hover state for buttons */
+.btn:hover {
+    background-color: #111049; /* Darker navy blue on hover */
+    border-color: #F2F2F7; /* Matching border on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow on hover */
+    color: white; /* Ensure text color remains white */
+}
+
+/* Optional: Outline button variant */
+.btn-outline-primary {
+    background-color: #F2F2F7; /* Transparent background */
+    border-color: #111049; /* Navy blue border */
+    color: #111049; /* Navy blue text */
+}
+
+.btn-outline-primary:hover {
+    background-color: #111049; /* Navy blue on hover */
+    color: white; /* White text on hover */
+    border-color: #F2F2F7;
+    border-radius: 4px; /* Keep the same rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+}
+
+.row {
+    display: flex; /* Ensures child elements stretch */
+    align-items: stretch;
+}
+
+.card {
+    height: 100%; /* Ensures the cards take up the full height of the row */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Keeps content spaced properly */
+    border-color: #F2F2F7;
+    background-color: #F2F2F7;
+    box-shadow: none;
+}
+
+/* Adjust card images */
+.card img {
+    object-fit: cover;
+    height: 100%; /* Ensures the image fills the card height */
+    width: 100%;
+}
+
+/* Sidebar styles */
+.sidebar {
+    position: fixed; /* Makes it fixed on the left */
+    top: 58px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000; /* Ensures it stays above other content */
+    padding: 1rem; /* Adds padding inside the sidebar */
+    overflow-y: auto; /* Enables scrolling if content exceeds height */
+    width: 250px; /* Fixed width for the sidebar */
+    background-color: #353488;
+    border-right: 1px solid #353488; /* Adds a subtle border to the right */
+    box-shadow: 10px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar links */
+.sidebar .nav-link {
+    color: #F2F2F7; /* Navy blue for links */
+    padding: 0.75rem 1rem; /* Adjusts padding for better spacing */
+    border-radius: 4px; /* Rounded edges */
+    display: block; /* Ensures the full width of the link is clickable */
+    transition: background-color 0.3s, font-weight 0.3s; /* Smooth hover effects */
+}
+
+/* Hover effect for links */
+.sidebar .nav-link:hover {
+    font-weight: bold;
+}
+
+/* Active link */
+.sidebar .nav-link.active {
+    text-decoration: underline;
+}
+
+/* Adjust content area to accommodate the sidebar */
+.main-content {
+    margin-left: 250px; /* Matches the sidebar width */
+    padding: 1rem;
+    min-height: 100vh; /* Ensure the content fills the viewport height */
+    color: #F2F2F7;
+}
+
+.navbar {
+    position: fixed;
+    width: 100%;
+}
