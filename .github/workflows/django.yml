@@ -43,4 +43,4 @@ jobs:
     - name: Lint JavaScript
       run: |
         npm install
-        npx eslint frontend/src --ext .js,.jsx
+        npx eslint frontend/src -c .js,.jsx
