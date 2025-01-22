@@ -7,9 +7,9 @@ const Dashboard = ( {isAuthenticated }) => {
 
 
     /*if (!isAuthenticated) {
-        return <Navigate to='/' />
+        return <Navigate to='/login' />
     }
-        */
+     */   
 
     return (
         <div>
