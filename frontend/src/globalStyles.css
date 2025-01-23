@@ -10,6 +10,10 @@ body {
     min-height: 100vh;
 }
 
+.entry-container {
+    padding-top: 70px;
+}
+
 a {
     color: #111049; /* Link color */
 }
@@ -26,7 +30,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #111049; /* Header color */
 }
 
-.white { /* override p for home page */
+.white p { /* override p for sidebar */
     color: #F2F2F7;
 }
 
@@ -34,7 +38,8 @@ h1, h2, h3, h4, h5, h6 {
 .image-container {
     position: relative;
     overflow: hidden;
-    height: 300px;
+    height: 225px;
+    margin-top: 66px;
     margin-bottom: 20px;
 }
 
@@ -42,8 +47,9 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: skewY(-5deg);
+    transform: skewY(-3deg);
     transform-origin: top left;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Style for all buttons */
@@ -103,11 +109,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar styles */
 .sidebar {
-    position: fixed; /* Makes it fixed on the left */
-    top: 58px;
+    position: fixed;
+    height: calc(100vh - 66px); 
+    overflow-y: auto;
     bottom: 0;
     left: 0;
-    z-index: 1000; /* Ensures it stays above other content */
+    z-index: 1000;  /*Ensures it stays above other content */
     padding: 1rem; /* Adds padding inside the sidebar */
     overflow-y: auto; /* Enables scrolling if content exceeds height */
     width: 250px; /* Fixed width for the sidebar */
@@ -146,4 +153,5 @@ h1, h2, h3, h4, h5, h6 {
 .navbar {
     position: fixed;
     width: 100%;
+    top: 0px
 }

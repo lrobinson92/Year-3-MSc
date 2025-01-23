@@ -6,8 +6,7 @@ const SideNavbar = () => {
     return (
         <nav className="col-md-2 d-none d-md-block sidebar">
             <div className="sidebar-sticky">
-                {/* User Info */}
-                <div className="user-info">
+                <div className="user-info white">
                     <p>Welcome</p>
                 </div>
 
@@ -21,16 +20,6 @@ const SideNavbar = () => {
                             }
                         >
                             Dashboard
-                        </NavLink>
-                    </li>
-                    <li className="nav-item">
-                        <NavLink
-                            to="/"
-                            className={({ isActive }) =>
-                                isActive ? 'nav-link active' : 'nav-link'
-                            }
-                        >
-                            Home
                         </NavLink>
                     </li>
                     <li className="nav-item">

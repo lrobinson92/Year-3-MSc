@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from "react";
-import SideNavbar from '../components/SideNavbar';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { connect } from 'react-redux';
+import SideNavbar from '../components/SideNavbar';
 
-const ViewTeams = ( {isAuthenticated }) => {
+const ViewTeams = ( {isAuthenticated, firstLogin }) => {
 
     if (!isAuthenticated) {
-        return <Navigate to='/login' />
+        return <Navigate to="/login" />;
     }
+
+    if (firstLogin) {
+        return <Navigate to="/dashboard" />;
+    }
+
 
     return (
         <div>
@@ -27,4 +33,9 @@ const ViewTeams = ( {isAuthenticated }) => {
 };
 
 
-export default ViewTeams;
+const mapStateToProps = (state) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    firstLogin: state.auth.firstLogin,
+});
+
+export default connect(mapStateToProps)(ViewTeams);

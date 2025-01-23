@@ -98,12 +98,17 @@ export const signup = (name, email, password, re_password) => async dispatch => 
 
         dispatch({
             type: SIGNUP_SUCCESS,
-            payload: res.data
+            payload: res.data,
         });
+
+        return "success"; // Indicate success
     } catch (err) {
         dispatch({
-            type: SIGNUP_FAIL            
+            type: SIGNUP_FAIL,
         });
+
+        // Pass the error response to the caller
+        throw err.response?.data?.email || "Signup failed. Please try again.";
     }
 };
 
@@ -153,9 +158,17 @@ export const login = (email, password) => async dispatch => {
     } catch (err) {
         dispatch({
             type: LOGIN_FAIL,
+            payload: "Login details are not correct. Please try again."
         });
     }
 };
+
+export const resetFirstLogin = () => (dispatch) => {
+    dispatch({
+        type: 'RESET_FIRST_LOGIN'
+    });
+};
+
 
 export const reset_password = (email) => async dispatch => {
      const config = {

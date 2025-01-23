@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
+import logo from '../assests/images/logo.png';
 
 const Navbar = ({ logout, isAuthenticated }) => {
     const navigate = useNavigate(); // React Router hook for navigation
@@ -36,11 +37,16 @@ const Navbar = ({ logout, isAuthenticated }) => {
     );
 
     return (
-        <nav className="navbar navbar-light bg-light px-4">
-            <Link className="navbar-brand" to="/">
-                SOPify
-            </Link>
-            {isAuthenticated ? authLinks() : guestLinks()}
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="container-fluid">
+                <Link to="/" className="navbar-brand d-flex align-items-center">
+                    <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
+                    SOPify
+                </Link>
+                <div className="collapse navbar-collapse">
+                    {isAuthenticated ? authLinks() : guestLinks()}
+                </div>
+            </div>
         </nav>
     );
 };

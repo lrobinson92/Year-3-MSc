@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import SideNavbar from '../components/SideNavbar';
+import { resetFirstLogin } from '../actions/auth';
+import { connect } from 'react-redux';
+
+const Dashboard = ( { isAuthenticated, firstLogin, resetFirstLogin }) => {
 
 
-const Dashboard = ( {isAuthenticated }) => {
+    useEffect(() => {
+        if (firstLogin) {
+            resetFirstLogin(); // Reset firstLogin state after visiting dashboard
+        }
+    }, [firstLogin, resetFirstLogin]);
 
-
-    /*if (!isAuthenticated) {
-        return <Navigate to='/login' />
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
     }
-     */   
+
+
 
     return (
         <div>
@@ -104,5 +112,9 @@ const Dashboard = ( {isAuthenticated }) => {
     
 };
 
+const mapStateToProps = (state) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    firstLogin: state.auth.firstLogin,
+});
 
-export default Dashboard;
+export default connect(mapStateToProps, { resetFirstLogin })(Dashboard);

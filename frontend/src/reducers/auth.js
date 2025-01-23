@@ -1,6 +1,7 @@
 import {
     LOGIN_SUCCESS,
     LOGIN_FAIL,
+    RESET_FIRST_LOGIN,
     SIGNUP_SUCCESS,
     SIGNUP_FAIL,
     ACTIVATION_SUCCESS,
@@ -21,6 +22,7 @@ const initialState = {
     refresh: localStorage.getItem('accessrefresh'),
     isAuthenticated: null,
     user: null,
+    firstLogin: false,
     error: null
 };
 
@@ -38,8 +40,16 @@ const initialState = {
             return {
                 ...state,
                 isAuthenticated: true,
+                firstLogin: true,
+                user: payload.user,
                 access: payload.access,
                 refresh: payload.refresh,
+                error: null
+            };
+        case RESET_FIRST_LOGIN:
+            return {
+                ...state,
+                firstLogin: false
             };
         case SIGNUP_SUCCESS:
             return {
@@ -72,6 +82,7 @@ const initialState = {
                 refresh: null,
                 isAuthenticated: false,
                 user: null,
+                error: payload
             };
         case PASSWORD_RESET_SUCCESS:
         case PASSWORD_RESET_FAIL:

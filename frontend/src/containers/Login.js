@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { login } from '../actions/auth';
 
-const Login = ({ login, isAuthenticated }) => {
+const Login = ({ login, isAuthenticated, error }) => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -15,7 +15,6 @@ const Login = ({ login, isAuthenticated }) => {
 
     const onSubmit = e => {
         e.preventDefault();
-
         login(email, password);
     };
 
@@ -24,9 +23,10 @@ const Login = ({ login, isAuthenticated }) => {
     }
 
     return (
-        <div className="container mt-5">
+        <div className="container mt-5 entry-container">
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4" >Sign in to SOPify</h1>
+                {error && <div className="alert alert-danger" role="alert">{error}</div>}
                 <form onSubmit={onSubmit}>
                     <div className="form-group mb-4">
                         <input
@@ -68,6 +68,7 @@ const Login = ({ login, isAuthenticated }) => {
 
 const mapStateToProps = state => ({
     isAuthenticated: state.auth.isAuthenticated,
+    error: state.auth.error
 });
 
 export default connect(mapStateToProps, { login })(Login);
