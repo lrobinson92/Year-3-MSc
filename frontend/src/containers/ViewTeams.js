@@ -11,27 +11,81 @@ const ViewTeams = ( {isAuthenticated, firstLogin }) => {
 
     if (firstLogin) {
         return <Navigate to="/dashboard" />;
-    }
-
-
-    return (
-        <div>
-            {/* Sidebar and Main Content */}
-            <div className="d-flex">
-                <Sidebar />
-                <div className="main-content" style={{ padding: '1rem', flex: 1 }}>
-                    <div>
-                        <h2>Teams</h2>
-                        
+    } 
+    
+        return (
+            <div>
+                {/* Sidebar and Main Content */}
+                <div className="d-flex">
+                    <Sidebar />
+                    <div className="main-content">
+                    <div className="recent-items-card">
+                            {/* Recent Items */}
+                            <div className="row mb-4">
+                                <h3>All Teams</h3>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 1</h5>
+                                        <p>Details about team 1.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 2</h5>
+                                        <p>Details about recent team  2.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 3</h5>
+                                        <p>Details about recent team  3.</p>
+                                    </div>
+                                </div>       
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 4</h5>
+                                        <p>Details about team 4.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 5</h5>
+                                        <p>Details about team 5.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 6</h5>
+                                        <p>Details about team 6.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 7</h5>
+                                        <p>Details about team 7.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 8</h5>
+                                        <p>Details about team 8.</p>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mb-3">
+                                    <div className="card p-3">
+                                        <h5>Team 9</h5>
+                                        <p>Details about team 9.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h2>View Teams</h2>
-                    
                 </div>
             </div>
-        </div>
-    );
-};
-
+        );
+        
+    };
+    
 
 const mapStateToProps = (state) => ({
     isAuthenticated: state.auth.isAuthenticated,

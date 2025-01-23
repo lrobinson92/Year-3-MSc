@@ -24,18 +24,8 @@ const Dashboard = ( { isAuthenticated, firstLogin, resetFirstLogin }) => {
             {/* Sidebar and Main Content */}
             <div className="d-flex">
                 <Sidebar />
-                <div className="main-content" style={{ flex: 1, padding: '2rem' }}>
-                    <div
-                        style={{
-                            width: '100%',
-                            margin: '0 auto',
-                            background: '#F2F2F7',
-                            borderRadius: 30,
-                            padding: '2rem',
-                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                            marginTop: '4rem',
-                        }}
-                    >
+                <div className="main-content">
+                <div className="recent-items-card">
                         {/* Recent Items */}
                         <div className="row mb-4">
                             <h3>Recent Items</h3>

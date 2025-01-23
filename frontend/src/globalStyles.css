@@ -147,15 +147,15 @@ h1, h2, h3, h4, h5, h6 {
 /* Sidebar links */
 .sidebar .nav-link {
     color: #F2F2F7; /* Navy blue for links */
-    padding: 0.75rem 1rem; /* Adjusts padding for better spacing */
-    border-radius: 4px; /* Rounded edges */
+    font-size: 1.2em;
+    padding: 10px 15px; /* Adjusts padding for better spacing */
     display: block; /* Ensures the full width of the link is clickable */
     transition: background-color 0.3s, font-weight 0.3s; /* Smooth hover effects */
 }
 
 /* Hover effect for links */
-.sidebar .nav-link:hover {
-    font-weight: bold;
+.sidebar .nav-item .nav-link:hover {
+    text-decoration: underline;
 }
 
 /* Active link */
@@ -166,9 +166,22 @@ h1, h2, h3, h4, h5, h6 {
 /* Adjust content area to accommodate the sidebar */
 .main-content {
     margin-left: 250px; /* Matches the sidebar width */
-    padding: 1rem;
-    min-height: 100vh; /* Ensure the content fills the viewport height */
-    color: #F2F2F7;
+    padding: 2rem;
+    min-height: 92vh; /* Ensure the content fills the viewport height */
+    flex: 1;
+    background: #111049;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 4rem;
+}
+
+.recent-items-card {
+    width: 100%;
+    padding: 2rem;
+    background: #F2F2F7;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: calc(92vh - 4rem);
 }
 
 .navbar {
