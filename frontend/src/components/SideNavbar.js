@@ -1,13 +1,23 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-const SideNavbar = () => {
-
+const SideNavbar = ( { user } ) => {
+    const getUserInitial = (name) => {
+        return name ? name.charAt(0).toUpperCase() : '';
+    };
     
     return (
         <nav className="col-md-2 d-none d-md-block sidebar">
             <div className="sidebar-sticky">
-                <div className="user-info white">
-                    <p>Welcome</p>
+                <div className="user-info">
+                    <div className="user-greeting">
+                    {user && (
+                            <span className="user-initial">
+                                {getUserInitial(user.name)}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Sidebar Navigation */}
@@ -58,4 +68,8 @@ const SideNavbar = () => {
     );
 };
 
-export default SideNavbar;
+const mapStateToProps = (state) => ({
+    user: state.auth.user, // Access user from Redux
+});
+
+export default connect(mapStateToProps)(SideNavbar);
