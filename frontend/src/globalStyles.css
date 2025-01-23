@@ -34,6 +34,27 @@ h1, h2, h3, h4, h5, h6 {
     color: #F2F2F7;
 }
 
+.user-greeting { /* New style for user greeting */
+    color: #f2f2f2; /* Lighter shade of blue */
+    font-size: 1.5em; /* Increase the font size */
+    font-weight: bold; /* Make the text bold */
+    margin-bottom: 20px; /* Add some space below the greeting */
+}
+
+.user-initial {
+    display: inline-block;
+    width: 60px; /* Increase the width */
+    height: 60px; /* Increase the height */
+    line-height: 60px; /* Match the height for vertical centering */
+    border-radius: 50%;
+    background-color: #111049; /* Circle background color */
+    color: #f2f2f2; /* Text color */
+    text-align: center;
+    font-size: 2em; /* Increase the font size */
+    font-weight: bold;
+    margin-right: 10px; /* Space between circle and greeting */
+}
+
 /* Top Banner Image with Slanted Effect */
 .image-container {
     position: relative;

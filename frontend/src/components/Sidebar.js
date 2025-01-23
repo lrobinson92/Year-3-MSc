@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-const SideNavbar = ( { user } ) => {
+const Sidebar = ( { user } ) => {
     const getUserInitial = (name) => {
         return name ? name.charAt(0).toUpperCase() : '';
     };
@@ -72,4 +72,4 @@ const mapStateToProps = (state) => ({
     user: state.auth.user, // Access user from Redux
 });
 
-export default connect(mapStateToProps)(SideNavbar);
+export default connect(mapStateToProps)(Sidebar);

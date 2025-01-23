@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import SideNavbar from '../components/SideNavbar';
+import Sidebar from '../components/Sidebar';
 import { resetFirstLogin } from '../actions/auth';
 import { connect } from 'react-redux';
 
@@ -23,7 +23,7 @@ const Dashboard = ( { isAuthenticated, firstLogin, resetFirstLogin }) => {
         <div>
             {/* Sidebar and Main Content */}
             <div className="d-flex">
-                <SideNavbar />
+                <Sidebar />
                 <div className="main-content" style={{ flex: 1, padding: '2rem' }}>
                     <div
                         style={{

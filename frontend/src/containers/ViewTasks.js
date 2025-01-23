@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
-import SideNavbar from '../components/SideNavbar';
+import Sidebar from '../components/Sidebar';
 
 const ViewTasks = ( {isAuthenticated, firstLogin }) => {
 
@@ -19,7 +19,7 @@ const ViewTasks = ( {isAuthenticated, firstLogin }) => {
         <div>
             {/* Sidebar and Main Content */}
             <div className="d-flex">
-                <SideNavbar />
+                <Sidebar />
                 <div className="main-content" style={{ padding: '1rem', flex: 1 }}>
                     <div>
                         <h2>Tasks</h2>
