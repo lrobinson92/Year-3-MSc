@@ -11,6 +11,10 @@ class TeamViewSet(viewsets.ModelViewSet):
     serializer_class = TeamSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        return Team.objects.filter(team_memberships__user=user)
+
     def perform_create(self, serializer):
         logger.debug(f"Data received: {self.request.data}")
         team = serializer.save(created_by=self.request.user)

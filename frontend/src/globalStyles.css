@@ -167,8 +167,12 @@ ul.member-list li {
     flex-direction: column;
     justify-content: space-between; /* Keeps content spaced properly */
     border-color: #111049;
-    background-color: #e7e7eed3;
+    background-color: #f2f2f2;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card .view {
+    background-color: #e7e7eed3;
 }
 
 /* Adjust card images */

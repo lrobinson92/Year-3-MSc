@@ -59,12 +59,10 @@ const ViewTeams = ({ isAuthenticated, firstLogin }) => {
                         </div>  
                         {/* Recent Items */}
                         <div className="row">
-                            
                             {Array.isArray(teams) && teams.length > 0 ? (
                                 teams.map((team) => (
                                     <div className="col-md-4 mb-3" key={team.id}>
-                                        <div className="card p-3">
-                                            <h4>{team.name}</h4>
+                                        <div className="card p-3 view">                                            <h4>{team.name}</h4>
                                             <ul className="member-list">
                                                 {team.members.map((member) => (
                                                     <li key={member.id}>
