@@ -14,6 +14,7 @@ import ViewTasks from "./containers/ViewTasks";
 import ViewSOP from "./containers/ViewSOP";
 import New from "./containers/New";
 import Edit from "./containers/Edit";
+import CreateTeam from "./containers/CreateTeam";
 import './globalStyles.css';
 
 import { Provider } from "react-redux";
@@ -35,6 +36,7 @@ const App = () => (
                     <Route path="/view/dashboard" element={<Dashboard />} />
                     <Route path='/view/documents' element={<ViewDocuments />} />
                     <Route path='/view/teams' element={<ViewTeams />} />
+                    <Route path='/create-team' element={<CreateTeam />} />
                     <Route path='/view/tasks' element={<ViewTasks />} />
                     <Route path='/view/sop' element={<ViewSOP />} />
                     <Route path='/new' element={<New />} />

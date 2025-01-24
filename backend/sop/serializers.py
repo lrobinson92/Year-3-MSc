@@ -1,3 +1,4 @@
+import logging
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -31,8 +32,9 @@ class TeamMembershipSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    members = TeamMembershipSerializer(source='team_memberships', many=True)
+    members = TeamMembershipSerializer(source='team_memberships', many=True, read_only=True)
     
     class Meta:
         model = Team
         fields = ['id', 'name', 'description', 'created_by', 'members']
+        read_only_fields = ['created_by', 'members']

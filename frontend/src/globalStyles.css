@@ -55,6 +55,51 @@ h1, h2, h3, h4, h5, h6 {
     margin-right: 10px; /* Space between circle and greeting */
 }
 
+/* Circle with initial */
+.member-initial {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+    background-color: #111049; /* Circle background color */
+    color: #f2f2f2; /* Text color */
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-right: 10px; /* Space between circle and text */
+    position: relative;
+}
+
+/* Tooltip */
+.member-initial:hover::after {
+    content: attr(data-fullname); /* Display full name */
+    position: absolute;
+    bottom: 100%; /* Position above the circle */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #111049;
+    color: #f2f2f2;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    font-size: 0.8em; /* Smaller font size for tooltip */
+}
+
+/* Remove bullet points and display inline */
+ul.member-list {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+    display: flex; /* Display items inline */
+    flex-wrap: wrap; /* Allow wrapping to the next line if needed */
+}
+
+ul.member-list li {
+    margin-right: 10px; /* Space between list items */
+}
+
 /* Top Banner Image with Slanted Effect */
 .image-container {
     position: relative;
@@ -106,6 +151,11 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
 }
 
+/* Specific style for the create team link in ViewTeams */
+.create-new-link {
+    margin-left: auto; /* Push the link to the right */
+}
+
 .row {
     display: flex; /* Ensures child elements stretch */
     align-items: stretch;
@@ -116,9 +166,9 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* Keeps content spaced properly */
-    border-color: #F2F2F7;
-    background-color: #F2F2F7;
-    box-shadow: none;
+    border-color: #111049;
+    background-color: #e7e7eed3;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Adjust card images */
@@ -187,5 +237,5 @@ h1, h2, h3, h4, h5, h6 {
 .navbar {
     position: fixed;
     width: 100%;
-    top: 0px
+    top: 0px;
 }
