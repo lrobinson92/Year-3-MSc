@@ -59,6 +59,11 @@ const ViewTeams = ({ isAuthenticated, firstLogin }) => {
                                     <div className="col-md-4 mb-3" key={team.id}>
                                         <div className="card p-3">
                                             <h5>{team.name}</h5>
+                                            <ul>
+                                                {team.members.map((member) => (
+                                                    <li key={member.id}>{member.user_name}</li>
+                                                ))}
+                                            </ul>
                                             <p>{team.description}</p>
                                         </div>
                                     </div>
