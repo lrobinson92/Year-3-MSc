@@ -199,14 +199,16 @@ DJOSER = {
 
 AUTH_USER_MODEL = 'sop.UserAccount'
 
-
-# Recommended for Production
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React Dev Server
-#    "https://your-frontend-domain.com",  # Production domain
-]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # Add your frontend URL here
+    #    "https://your-frontend-domain.com",  # Production domain
+]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',  # Add your frontend URL here
+]
+
+
 CSRF_COOKIE_HTTPONLY = False  # Ensure the frontend can access the cookie
 CSRF_COOKIE_SECURE = True    # Use True if HTTPS is enabled
