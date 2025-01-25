@@ -3,9 +3,11 @@ import { Link, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
+import { Dropdown } from 'react-bootstrap';
+import customToggle from '../utils/customToggle';
+import { deleteTeam } from '../actions/team';
 
-
-const ViewTeams = ({ isAuthenticated, firstLogin }) => {
+const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -44,6 +46,24 @@ const ViewTeams = ({ isAuthenticated, firstLogin }) => {
         return <div>{error}</div>;
     }
 
+    const handleDelete = async (teamId) => {
+        try {
+            await deleteTeam(teamId);
+            setTeams(teams.filter(team => team.id !== teamId));
+        } catch (err) {
+            console.error('Failed to delete team');
+        }
+    };
+
+    /* NOT DOING ANYTHING WITH EDIT AND ADD MEMBERS YET */
+    const handleEdit = (teamId) => {
+        console.log(`Edit team with ID: ${teamId}`);
+    };
+
+    const handleAddMembers = (teamId) => {
+        console.log(`Add members to team with ID: ${teamId}`);
+    };
+
     return (
         <div>
             {/* Sidebar and Main Content */}
@@ -62,7 +82,21 @@ const ViewTeams = ({ isAuthenticated, firstLogin }) => {
                             {Array.isArray(teams) && teams.length > 0 ? (
                                 teams.map((team) => (
                                     <div className="col-md-4 mb-3" key={team.id}>
-                                        <div className="card p-3 view">                                            <h4>{team.name}</h4>
+                                        <div className="card p-3 view">
+                                        <div className="d-flex justify-content-between align-items-center">
+                                                <h4>{team.name}</h4>
+                                                <Dropdown>
+                                                    <Dropdown.Toggle as={customToggle} id="dropdown-custom-components">
+                                                        ...
+                                                    </Dropdown.Toggle>
+
+                                                    <Dropdown.Menu className="custom-dropdown-menu">
+                                                        <Dropdown.Item onClick={() => handleEdit(team.id)}>Edit</Dropdown.Item>
+                                                        <Dropdown.Item onClick={() => handleAddMembers(team.id)}>Add Members</Dropdown.Item>
+                                                        <Dropdown.Item onClick={() => handleDelete(team.id)}>Delete</Dropdown.Item>
+                                                    </Dropdown.Menu>
+                                                </Dropdown>
+                                            </div>
                                             <ul className="member-list">
                                                 {team.members.map((member) => (
                                                     <li key={member.id}>
@@ -95,4 +129,4 @@ const mapStateToProps = (state) => ({
     firstLogin: state.auth.firstLogin,
 });
 
-export default connect(mapStateToProps)(ViewTeams);
+export default connect(mapStateToProps, { deleteTeam })(ViewTeams);

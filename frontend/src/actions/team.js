@@ -1,5 +1,10 @@
 import axios from '../utils/axiosConfig';
-import { CREATE_TEAM_SUCCESS, CREATE_TEAM_FAIL } from './types';
+import { 
+    CREATE_TEAM_SUCCESS, 
+    CREATE_TEAM_FAIL, 
+    DELETE_TEAM_SUCCESS, 
+    DELETE_TEAM_FAIL  
+    } from './types';
 
 export const createTeam = (name, description) => async dispatch => {
     const config = {
@@ -21,6 +26,28 @@ export const createTeam = (name, description) => async dispatch => {
     } catch (err) {
         dispatch({
             type: CREATE_TEAM_FAIL
+        });
+        throw err;
+    }
+};
+
+export const deleteTeam = (teamId) => async dispatch => {
+    const config = {
+        headers: {
+            'Authorization': `JWT ${localStorage.getItem('access')}`
+        }
+    };
+
+    try {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/`, config);
+
+        dispatch({
+            type: DELETE_TEAM_SUCCESS,
+            payload: teamId
+        });
+    } catch (err) {
+        dispatch({
+            type: DELETE_TEAM_FAIL
         });
         throw err;
     }

@@ -156,6 +156,22 @@ ul.member-list li {
     margin-left: auto; /* Push the link to the right */
 }
 
+
+/* Custom styles for the dropdown menu */
+.custom-dropdown-menu {
+    background-color: #111049; /* Navy background */
+    color: white; /* White text */
+}
+
+.custom-dropdown-menu .dropdown-item {
+    color: white; /* White text for dropdown items */
+}
+
+.custom-dropdown-menu .dropdown-item:hover {
+    background-color: #111049; /* Darker navy on hover */
+}
+
+
 .row {
     display: flex; /* Ensures child elements stretch */
     align-items: stretch;
@@ -171,9 +187,7 @@ ul.member-list li {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card .view {
-    background-color: #e7e7eed3;
-}
+
 
 /* Adjust card images */
 .card img {
