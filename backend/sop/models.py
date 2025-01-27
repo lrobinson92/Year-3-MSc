@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from django.conf import settings
-
 
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, name, password=None):
@@ -73,7 +71,7 @@ class TeamMembership(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,  # Reference your custom user model
+        UserAccount,
         on_delete=models.CASCADE, 
         related_name="team_memberships"
     )
@@ -94,3 +92,34 @@ class TeamMembership(models.Model):
     def __str__(self):
         return f"{self.user.name} - {self.role} in {self.team.name}"
 
+class Task(models.Model):
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('complete', 'Complete'),
+    ]
+
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(
+        UserAccount, 
+        on_delete=models.SET_NULL, 
+        related_name='tasks',
+        null=True,
+        blank=True
+    )
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name='tasks',
+        null=True,
+        blank=True
+    )
+    due_date = models.DateField()
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='not_started'
+    )
+
+    def __str__(self):
+        return self.title

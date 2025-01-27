@@ -18,6 +18,7 @@ import Edit from "./containers/Edit";
 import CreateTeam from "./containers/CreateTeam";
 import EditTeam from "./containers/EditTeam";
 import InviteMember from "./containers/InviteMember";
+import EditTask from './containers/EditTask'; 
 import './globalStyles.css';
 
 import { Provider } from "react-redux";
@@ -43,6 +44,7 @@ const App = () => (
                     <Route path='/edit-team/:id' element={<EditTeam />} />
                     <Route path="/invite-member/:teamId" element={<InviteMember />} />
                     <Route path='/view/tasks' element={<ViewTasks />} />
+                    <Route path="/edit-task/:id" element={<EditTask />} />
                     <Route path='/view/sop' element={<ViewSOP />} />
                     <Route path='/new' element={<New />} />
                     <Route path='/edit' element={<Edit />} />

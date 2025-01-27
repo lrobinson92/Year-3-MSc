@@ -3,7 +3,7 @@ from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerialize
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from sop.models import Team, TeamMembership
+from sop.models import Team, TeamMembership, Task
 
 User = get_user_model()
 
@@ -38,3 +38,14 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ['id', 'name', 'description', 'created_by', 'members']
         read_only_fields = ['created_by', 'members']
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    assigned_to_name = serializers.ReadOnlyField(source='assigned_to.name')
+
+    class Meta:
+        model = Task
+        fields = ['id', 'description', 'assigned_to', 'assigned_to_name', 'team', 'due_date', 'status']
+
+    def get_assigned_to_name(self, obj):
+        return obj.assigned_to.name if obj.assigned_to else 'Unassigned'
