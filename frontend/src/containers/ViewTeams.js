@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
 import { Dropdown } from 'react-bootstrap';
-import customToggle from '../utils/customToggle';
-import { deleteTeam } from '../actions/team';
+import CustomToggle from '../utils/customToggle';
+import { deleteTeam, editTeam } from '../actions/team'; // Import the editTeam action
+import InviteMember from './InviteMember';
 
 const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -55,13 +58,12 @@ const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
         }
     };
 
-    /* NOT DOING ANYTHING WITH EDIT AND ADD MEMBERS YET */
     const handleEdit = (teamId) => {
-        console.log(`Edit team with ID: ${teamId}`);
+        navigate(`/edit-team/${teamId}`);
     };
 
     const handleAddMembers = (teamId) => {
-        console.log(`Add members to team with ID: ${teamId}`);
+        navigate(`/invite-member/${teamId}`);
     };
 
     return (
@@ -83,10 +85,10 @@ const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
                                 teams.map((team) => (
                                     <div className="col-md-4 mb-3" key={team.id}>
                                         <div className="card p-3 view">
-                                        <div className="d-flex justify-content-between align-items-center">
+                                            <div className="d-flex justify-content-between align-items-center">
                                                 <h4>{team.name}</h4>
                                                 <Dropdown>
-                                                    <Dropdown.Toggle as={customToggle} id="dropdown-custom-components">
+                                                    <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
                                                         ...
                                                     </Dropdown.Toggle>
 
@@ -129,4 +131,4 @@ const mapStateToProps = (state) => ({
     firstLogin: state.auth.firstLogin,
 });
 
-export default connect(mapStateToProps, { deleteTeam })(ViewTeams);
+export default connect(mapStateToProps, { deleteTeam, editTeam })(ViewTeams);

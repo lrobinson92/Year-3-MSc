@@ -2,7 +2,9 @@ import {
     CREATE_TEAM_SUCCESS, 
     CREATE_TEAM_FAIL, 
     DELETE_TEAM_SUCCESS, 
-    DELETE_TEAM_FAIL  
+    DELETE_TEAM_FAIL,
+    EDIT_TEAM_SUCCESS,
+    EDIT_TEAM_FAIL 
 } from '../actions/types';
 
 const initialState = {
@@ -36,6 +38,17 @@ function teamReducer(state = initialState, action) {
             return {
                 ...state,
                 error: 'Failed to delete team'
+            };
+        case EDIT_TEAM_SUCCESS:
+            return {
+                ...state,
+                teams: state.teams.map(team => team.id === payload.id ? payload : team),
+                error: null
+            };
+        case EDIT_TEAM_FAIL:
+            return {
+                ...state,
+                error: 'Failed to edit team'
             };
         default:
             return state;
