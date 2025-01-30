@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { editTeam } from '../actions/team';
 import axios from '../utils/axiosConfig';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const EditTeam = ({ editTeam }) => {
     const { id } = useParams(); // Get team ID from URL
@@ -48,6 +49,7 @@ const EditTeam = ({ editTeam }) => {
 
     return (
         <div className='container mt-5 entry-container'>
+            <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/teams')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4">Edit Team</h1>
                 <form onSubmit={onSubmit}>

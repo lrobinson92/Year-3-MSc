@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const InviteMember = () => {
     const { teamId } = useParams(); // Get team ID from URL
@@ -25,6 +26,7 @@ const InviteMember = () => {
 
     return (
         <div className='container mt-5 entry-container'>
+            <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/teams')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4">Invite Member</h1>
                 <form onSubmit={onSubmit}>

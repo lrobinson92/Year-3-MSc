@@ -3,6 +3,7 @@ import { Navigate, useNavigate  } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { createTeam } from '../actions/team';
 import axios from '../utils/axiosConfig';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const CreateTeam = ({ createTeam, isAuthenticated }) => {
     const [formData, setFormData] = useState({
@@ -33,6 +34,7 @@ const CreateTeam = ({ createTeam, isAuthenticated }) => {
 
     return (
         <div className='container mt-5 entry-container'>
+            <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/teams')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4">Create Team</h1>
                 <form onSubmit={onSubmit}>

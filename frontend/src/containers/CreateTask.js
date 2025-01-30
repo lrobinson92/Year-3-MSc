@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from '../utils/axiosConfig';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const CreateTask = ({ isAuthenticated, user }) => {
     const [formData, setFormData] = useState({
@@ -76,11 +77,13 @@ const CreateTask = ({ isAuthenticated, user }) => {
     }
 
     return (
+        
         <div className="container mt-5 entry-container">
+            <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4">Create Task</h1>
                 <form onSubmit={onSubmit}>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Description</label>
                         <textarea
                             className="form-control"
@@ -91,7 +94,7 @@ const CreateTask = ({ isAuthenticated, user }) => {
                             required
                         />
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Team</label>
                         <select
                             className="form-control"
@@ -107,7 +110,7 @@ const CreateTask = ({ isAuthenticated, user }) => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Assigned To</label>
                         <select
                             className="form-control"
@@ -124,7 +127,7 @@ const CreateTask = ({ isAuthenticated, user }) => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Due Date</label>
                         <input
                             type="date"
@@ -135,7 +138,7 @@ const CreateTask = ({ isAuthenticated, user }) => {
                             required
                         />
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Status</label>
                         <select
                             className="form-control"

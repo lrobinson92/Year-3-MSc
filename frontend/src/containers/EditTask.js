@@ -98,18 +98,6 @@ const EditTask = ({ isAuthenticated, user }) => {
         }
     };
 
-    const deleteTask = async () => {
-        try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, {
-                withCredentials: true,
-            });
-            alert("Task deleted successfully!");
-            navigate('/view/tasks');
-        } catch (err) {
-            console.error('Failed to delete task:', err);
-            alert("Failed to delete task. Please try again.");
-        }
-    };
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -117,13 +105,14 @@ const EditTask = ({ isAuthenticated, user }) => {
 
     return (
         <div className="container mt-5 entry-container">
+            <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <div className="d-flex align-items-center mb-4">
-                    <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
+                    
                     <h1 className="text-center flex-grow-1 mb-0">Edit Task</h1>
                 </div>
                 <form onSubmit={onSubmit}>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Description</label>
                         <textarea
                             className="form-control"
@@ -134,7 +123,7 @@ const EditTask = ({ isAuthenticated, user }) => {
                             required
                         />
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Team</label>
                         <select
                             className="form-control"
@@ -150,7 +139,7 @@ const EditTask = ({ isAuthenticated, user }) => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Assigned To</label>
                         <select
                             className="form-control"
@@ -167,7 +156,7 @@ const EditTask = ({ isAuthenticated, user }) => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Due Date</label>
                         <input
                             type="date"
@@ -178,7 +167,7 @@ const EditTask = ({ isAuthenticated, user }) => {
                             required
                         />
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group mb-3">
                         <label>Status</label>
                         <select
                             className="form-control"
@@ -192,15 +181,8 @@ const EditTask = ({ isAuthenticated, user }) => {
                         </select>
                     </div>
                     <div className="d-flex justify-content-between">
-                        <button className="btn btn-primary" type="submit">
+                        <button className="btn btn-primary w-100" type="submit">
                             Update Task
-                        </button>
-                        <button
-                            className="btn btn-danger"
-                            type="button"
-                            onClick={deleteTask}
-                        >
-                            Delete Task
                         </button>
                     </div>
                 </form>

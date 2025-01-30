@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
 import { toTitleCase } from '../utils/utils';
+import { FaEdit, FaTrash } from 'react-icons/fa'; // Import the icons
 
 const ViewTasks = ({ isAuthenticated, firstLogin }) => {
     const [tasks, setTasks] = useState([]);
@@ -98,18 +99,14 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                                         <td>{new Date(task.due_date).toLocaleDateString()}</td>
                                                         <td>{toTitleCase(task.status)}</td>
                                                         <td>
-                                                            <button
-                                                                className="btn btn-sm btn-primary"
+                                                            <FaEdit
+                                                                className="action-icon edit-icon"
                                                                 onClick={() => navigate(`/edit-task/${task.id}`)}
-                                                            >
-                                                                Edit
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-sm btn-danger ml-2"
+                                                            />
+                                                            <FaTrash
+                                                                className="action-icon delete-icon"
                                                                 onClick={() => deleteTask(task.id)}
-                                                            >
-                                                                Delete
-                                                            </button>
+                                                            />
                                                         </td>
                                                     </tr>
                                                 ))}
