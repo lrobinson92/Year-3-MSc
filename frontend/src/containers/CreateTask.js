@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { createTask } from '../actions/task';
 import axios from '../utils/axiosConfig';
 import { FaArrowLeft } from 'react-icons/fa';
 
-const CreateTask = ({ isAuthenticated, user }) => {
+const CreateTask = ({ createTask, isAuthenticated }) => {
     const [formData, setFormData] = useState({
         description: '',
         assigned_to: '', // Will be updated based on the team or user
@@ -39,36 +40,27 @@ const CreateTask = ({ isAuthenticated, user }) => {
     }, []);
 
     useEffect(() => {
+        // Filter users based on the selected team
         if (team) {
-            // If team is selected, filter users by that team
-            const filtered = users.filter(user =>
-                Array.isArray(user.teams) && user.teams.includes(Number(team))
+            const filtered = users.filter(
+                user => Array.isArray(user.teams) && user.teams.includes(Number(team))
             );
             setFilteredUsers(filtered);
         } else {
-            // If no team is selected, include the logged-in user
             setFilteredUsers(users);
-            // Set assigned_to to the logged-in user if no team is selected
-            setFormData(prevData => ({
-                ...prevData,
-                assigned_to: user ? user.id : '', // Default to logged-in user
-            }));
         }
-    }, [team, users, user]); // Rerun this effect when team or users change
+    }, [team, users]);
 
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/sop/tasks/`, formData, {
-                withCredentials: true,
-            });
-            alert('Task created successfully!');
+            await createTask(description, assigned_to, team, due_date, status);
+            alert("Task created successfully!");
             navigate('/view/tasks');
         } catch (error) {
-            console.error('Failed to create task:', error);
-            alert('Failed to create task. Please try again.');
+            alert("Failed to create task. Please try again.");
         }
     };
 
@@ -77,7 +69,6 @@ const CreateTask = ({ isAuthenticated, user }) => {
     }
 
     return (
-        
         <div className="container mt-5 entry-container">
             <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
@@ -104,9 +95,7 @@ const CreateTask = ({ isAuthenticated, user }) => {
                         >
                             <option value="">Select Team</option>
                             {teams.map(team => (
-                                <option key={team.id} value={team.id}>
-                                    {team.name}
-                                </option>
+                                <option key={team.id} value={team.id}>{team.name}</option>
                             ))}
                         </select>
                     </div>
@@ -162,7 +151,6 @@ const CreateTask = ({ isAuthenticated, user }) => {
 
 const mapStateToProps = (state) => ({
     isAuthenticated: state.auth.isAuthenticated,
-    user: state.auth.user, // Get the logged-in user from the store
 });
 
-export default connect(mapStateToProps)(CreateTask);
+export default connect(mapStateToProps, { createTask })(CreateTask);

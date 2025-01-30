@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from '../utils/axiosConfig';
-import { FaArrowLeft } from 'react-icons/fa'; // Import the back arrow icon
+import { FaArrowLeft } from 'react-icons/fa';
+import { editTask } from '../actions/task';
 
-const EditTask = ({ isAuthenticated, user }) => {
+const EditTask = ({ isAuthenticated, user, editTask }) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -50,19 +51,18 @@ const EditTask = ({ isAuthenticated, user }) => {
 
     useEffect(() => {
         const fetchUsers = async () => {
-          try {
-            const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, {
-              withCredentials: true,
-            });
-            console.log("Users from API:", usersRes.data); // Check for 'teams' field here
-            setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
-          } catch (err) {
-            console.error("Failed to fetch users:", err);
-          }
+            try {
+                const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, {
+                    withCredentials: true,
+                });
+                console.log("Users from API:", usersRes.data); // Check for 'teams' field here
+                setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+            } catch (err) {
+                console.error("Failed to fetch users:", err);
+            }
         };
         fetchUsers();
-      }, []);
-      
+    }, []);
 
     useEffect(() => {
         // Debugging the team filtering logic
@@ -85,19 +85,13 @@ const EditTask = ({ isAuthenticated, user }) => {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, {
-                ...formData,
-                assigned_to: assigned_to || user.id, // Default to logged-in user if no selection
-            }, {
-                withCredentials: true,
-            });
+            await editTask(id, description, assigned_to, team, due_date, status);
             alert("Task updated successfully!");
             navigate('/view/tasks');
         } catch (error) {
             alert("Failed to update task. Please try again.");
         }
     };
-
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -196,4 +190,4 @@ const mapStateToProps = (state) => ({
     user: state.auth.user,
 });
 
-export default connect(mapStateToProps)(EditTask);
+export default connect(mapStateToProps, { editTask })(EditTask);

@@ -1,6 +1,10 @@
-import { combineReducers } from "redux";
+import { combineReducers } from 'redux';
 import auth from './auth';
+import team from './team';
+import task from './task';
 
 export default combineReducers({
-    auth
+    auth,
+    team,
+    task
 });
