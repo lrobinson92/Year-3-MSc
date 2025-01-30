@@ -156,7 +156,6 @@ ul.member-list li {
     margin-left: auto; /* Push the link to the right */
 }
 
-
 /* Custom styles for the dropdown menu */
 .custom-dropdown-menu {
     background-color: #111049; /* Navy background */
@@ -170,7 +169,6 @@ ul.member-list li {
 .custom-dropdown-menu .dropdown-item:hover {
     background-color: #111049; /* Darker navy on hover */
 }
-
 
 .row {
     display: flex; /* Ensures child elements stretch */
@@ -186,8 +184,6 @@ ul.member-list li {
     background-color: #f2f2f2;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
-
 
 /* Adjust card images */
 .card img {
@@ -256,4 +252,33 @@ ul.member-list li {
     position: fixed;
     width: 100%;
     top: 0px;
+}
+
+.back-arrow {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #111049;
+    margin-right: 10px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+}
+
+.btn-primary,
+.btn-danger {
+    margin-right: 10px;
+}
+
+.btn-primary:last-child,
+.btn-danger:last-child {
+    margin-right: 0;
 }

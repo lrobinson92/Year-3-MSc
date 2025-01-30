@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from '../utils/axiosConfig';
-import { FaArrowLeft } from 'react-icons/fa'; // Import the back arrow icon
 
-const EditTask = ({ isAuthenticated, user }) => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-
+const CreateTask = ({ isAuthenticated, user }) => {
     const [formData, setFormData] = useState({
         description: '',
-        assigned_to: '',
+        assigned_to: '', // Will be updated based on the team or user
         team: '',
         due_date: '',
         status: 'not_started',
@@ -20,94 +16,58 @@ const EditTask = ({ isAuthenticated, user }) => {
     const [filteredUsers, setFilteredUsers] = useState([]);
 
     const { description, assigned_to, team, due_date, status } = formData;
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchTaskAndData = async () => {
+        // Fetch users and teams on initial render
+        const fetchUsersAndTeams = async () => {
             try {
-                const [taskRes, usersRes, teamsRes] = await Promise.all([
-                    axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, { withCredentials: true }),
+                const [usersRes, teamsRes] = await Promise.all([
                     axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, { withCredentials: true }),
                     axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/`, { withCredentials: true }),
                 ]);
 
-                setFormData({
-                    description: taskRes.data.description,
-                    assigned_to: taskRes.data.assigned_to ? taskRes.data.assigned_to.toString() : '',
-                    team: taskRes.data.team ? taskRes.data.team.toString() : '',
-                    due_date: taskRes.data.due_date,
-                    status: taskRes.data.status,
-                });
-
                 setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
                 setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : []);
             } catch (err) {
-                console.error('Failed to fetch task or data:', err);
+                console.error('Failed to fetch users or teams:', err);
             }
         };
 
-        fetchTaskAndData();
-    }, [id]);
+        fetchUsersAndTeams();
+    }, []);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-          try {
-            const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, {
-              withCredentials: true,
-            });
-            console.log("Users from API:", usersRes.data); // Check for 'teams' field here
-            setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
-          } catch (err) {
-            console.error("Failed to fetch users:", err);
-          }
-        };
-        fetchUsers();
-      }, []);
-      
-
-    useEffect(() => {
-        // Debugging the team filtering logic
         if (team) {
-            console.log(`Filtering users for team: ${team}`);
-            const filtered = users.filter(user => {
-                console.log(`Checking user: ${user.name}, Teams: ${user.teams}`);
-                return Array.isArray(user.teams) && user.teams.includes(parseInt(team));
-            });
-
-            console.log('Filtered Users:', filtered);
+            // If team is selected, filter users by that team
+            const filtered = users.filter(user =>
+                Array.isArray(user.teams) && user.teams.includes(Number(team))
+            );
             setFilteredUsers(filtered);
         } else {
-            setFilteredUsers(user ? [user] : []);
+            // If no team is selected, include the logged-in user
+            setFilteredUsers(users);
+            // Set assigned_to to the logged-in user if no team is selected
+            setFormData(prevData => ({
+                ...prevData,
+                assigned_to: user ? user.id : '', // Default to logged-in user
+            }));
         }
-    }, [team, users, user]);
+    }, [team, users, user]); // Rerun this effect when team or users change
 
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, {
-                ...formData,
-                assigned_to: assigned_to || user.id, // Default to logged-in user if no selection
-            }, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/sop/tasks/`, formData, {
                 withCredentials: true,
             });
-            alert("Task updated successfully!");
+            alert('Task created successfully!');
             navigate('/view/tasks');
         } catch (error) {
-            alert("Failed to update task. Please try again.");
-        }
-    };
-
-    const deleteTask = async () => {
-        try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, {
-                withCredentials: true,
-            });
-            alert("Task deleted successfully!");
-            navigate('/view/tasks');
-        } catch (err) {
-            console.error('Failed to delete task:', err);
-            alert("Failed to delete task. Please try again.");
+            console.error('Failed to create task:', error);
+            alert('Failed to create task. Please try again.');
         }
     };
 
@@ -118,10 +78,7 @@ const EditTask = ({ isAuthenticated, user }) => {
     return (
         <div className="container mt-5 entry-container">
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
-                <div className="d-flex align-items-center mb-4">
-                    <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
-                    <h1 className="text-center flex-grow-1 mb-0">Edit Task</h1>
-                </div>
+                <h1 className="text-center mb-4">Create Task</h1>
                 <form onSubmit={onSubmit}>
                     <div className="form-group mb-4">
                         <label>Description</label>
@@ -191,18 +148,9 @@ const EditTask = ({ isAuthenticated, user }) => {
                             <option value="complete">Complete</option>
                         </select>
                     </div>
-                    <div className="d-flex justify-content-between">
-                        <button className="btn btn-primary" type="submit">
-                            Update Task
-                        </button>
-                        <button
-                            className="btn btn-danger"
-                            type="button"
-                            onClick={deleteTask}
-                        >
-                            Delete Task
-                        </button>
-                    </div>
+                    <button className="btn btn-primary w-100" type="submit">
+                        Create Task
+                    </button>
                 </form>
             </div>
         </div>
@@ -211,7 +159,7 @@ const EditTask = ({ isAuthenticated, user }) => {
 
 const mapStateToProps = (state) => ({
     isAuthenticated: state.auth.isAuthenticated,
-    user: state.auth.user,
+    user: state.auth.user, // Get the logged-in user from the store
 });
 
-export default connect(mapStateToProps)(EditTask);
+export default connect(mapStateToProps)(CreateTask);

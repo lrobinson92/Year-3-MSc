@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
+import { toTitleCase } from '../utils/utils';
 
 const ViewTasks = ({ isAuthenticated, firstLogin }) => {
     const [tasks, setTasks] = useState([]);
@@ -29,6 +30,19 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
 
         fetchTasks();
     }, []);
+
+    const deleteTask = async (taskId) => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, {
+                withCredentials: true,
+            });
+            setTasks(tasks.filter(task => task.id !== taskId));
+            alert("Task deleted successfully!");
+        } catch (err) {
+            console.error('Failed to delete task:', err);
+            alert("Failed to delete task. Please try again.");
+        }
+    };
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -82,13 +96,19 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                                         <td>{task.assigned_to_name}</td>
                                                         <td>{task.team_name}</td>
                                                         <td>{new Date(task.due_date).toLocaleDateString()}</td>
-                                                        <td>{task.status.replace('_', ' ')}</td>
+                                                        <td>{toTitleCase(task.status)}</td>
                                                         <td>
                                                             <button
                                                                 className="btn btn-sm btn-primary"
                                                                 onClick={() => navigate(`/edit-task/${task.id}`)}
                                                             >
                                                                 Edit
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-sm btn-danger ml-2"
+                                                                onClick={() => deleteTask(task.id)}
+                                                            >
+                                                                Delete
                                                             </button>
                                                         </td>
                                                     </tr>

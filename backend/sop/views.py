@@ -72,21 +72,3 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Task.objects.filter(assigned_to=user)
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def tasks_overview(self, request):
-        user = request.user
-        
-        # Fetch "My Tasks" (tasks assigned to the user)
-        my_tasks = Task.objects.filter(assigned_to=user)
-        my_tasks_serializer = TaskSerializer(my_tasks, many=True)
-
-        # Fetch "Team Tasks" (tasks for teams the user belongs to)
-        teams = user.teams.all()
-        team_tasks = Task.objects.filter(team__in=teams)
-        team_tasks_serializer = TaskSerializer(team_tasks, many=True)
-
-        # Combine the results into one response
-        return Response({
-            'my_tasks': my_tasks_serializer.data,
-            'team_tasks': team_tasks_serializer.data
-        })

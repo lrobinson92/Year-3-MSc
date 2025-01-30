@@ -13,12 +13,11 @@ import ViewDocuments from "./containers/ViewDocuments";
 import ViewTeams from "./containers/ViewTeams";
 import ViewTasks from "./containers/ViewTasks";
 import ViewSOP from "./containers/ViewSOP";
-import New from "./containers/New";
-import Edit from "./containers/Edit";
 import CreateTeam from "./containers/CreateTeam";
 import EditTeam from "./containers/EditTeam";
 import InviteMember from "./containers/InviteMember";
 import EditTask from './containers/EditTask'; 
+import CreateTask from './containers/CreateTask';
 import './globalStyles.css';
 
 import { Provider } from "react-redux";
@@ -45,9 +44,8 @@ const App = () => (
                     <Route path="/invite-member/:teamId" element={<InviteMember />} />
                     <Route path='/view/tasks' element={<ViewTasks />} />
                     <Route path="/edit-task/:id" element={<EditTask />} />
+                    <Route path="/create-task" element={<CreateTask />} />
                     <Route path='/view/sop' element={<ViewSOP />} />
-                    <Route path='/new' element={<New />} />
-                    <Route path='/edit' element={<Edit />} />
                     <Route path='*' element={<h1>Route Not Found</h1>} />
                 </Routes>            
             </Layout>

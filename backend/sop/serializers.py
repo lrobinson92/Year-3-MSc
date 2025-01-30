@@ -15,9 +15,14 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
         ]
     )
 
+    teams = serializers.SerializerMethodField()
+
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'name', 'password')
+        fields = ('id', 'email', 'name', 'password', 'teams')
+
+    def get_teams(self, obj):
+        return list(obj.teams.values_list('id', flat=True))
 
 
 
@@ -42,10 +47,11 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned_to_name = serializers.ReadOnlyField(source='assigned_to.name')
+    team_name = serializers.ReadOnlyField(source='team.name')
 
     class Meta:
         model = Task
-        fields = ['id', 'description', 'assigned_to', 'assigned_to_name', 'team', 'due_date', 'status']
+        fields = ['id', 'description', 'assigned_to', 'assigned_to_name', 'team', 'team_name', 'due_date', 'status']
 
     def get_assigned_to_name(self, obj):
         return obj.assigned_to.name if obj.assigned_to else 'Unassigned'
