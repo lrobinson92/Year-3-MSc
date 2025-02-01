@@ -1,28 +1,133 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import SideNavbar from '../components/SideNavbar';
+import React, { useEffect, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { connect } from 'react-redux';
+import Sidebar from '../components/Sidebar';
+import axios from '../utils/axiosConfig';
+import { toTitleCase } from '../utils/utils';
+import { FaEdit, FaTrash } from 'react-icons/fa'; // Import the icons
 
+const ViewTasks = ({ isAuthenticated, firstLogin }) => {
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-const ViewTasks = ( {isAuthenticated }) => {
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/`, {
+                    withCredentials: true,  // Include credentials in the request
+                });
+                console.log('Fetched tasks:', res.data); // Log the fetched tasks
+                setTasks(res.data.sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch tasks');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    /*if (!isAuthenticated) {
-        return <Navigate to='/' />
+        fetchTasks();
+    }, []);
+
+    const deleteTask = async (taskId) => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, {
+                withCredentials: true,
+            });
+            setTasks(tasks.filter(task => task.id !== taskId));
+            alert("Task deleted successfully!");
+        } catch (err) {
+            console.error('Failed to delete task:', err);
+            alert("Failed to delete task. Please try again.");
+        }
+    };
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
     }
-        */
+
+    if (firstLogin) {
+        return <Navigate to="/dashboard" />;
+    }
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div>
             {/* Sidebar and Main Content */}
             <div className="d-flex">
-                <SideNavbar />
-                <div className="main-content" style={{ padding: '1rem', flex: 1 }}>
-                    <h1>View Tasks</h1>
-                    <p>Your main content goes here...</p>
+                <Sidebar />
+                <div className="main-content">
+                    <div className="recent-items-card">
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h2>My Tasks</h2>
+                            <Link to="/create-task" className="btn btn-primary create-new-link">
+                                + Create New Task
+                            </Link>
+                        </div>  
+                        {/* Recent Items */}
+                        <div className="row">
+                            {Array.isArray(tasks) && tasks.length > 0 ? (
+                                <div className="col-12 mb-3">
+                                    <div className="table-responsive">
+                                        <table className="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Description</th>
+                                                    <th>Assigned To</th>
+                                                    <th>Team</th>
+                                                    <th>Due Date</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {tasks.map((task) => (
+                                                    <tr key={task.id}>
+                                                        <td>{task.description}</td>
+                                                        <td>{task.assigned_to_name}</td>
+                                                        <td>{task.team_name}</td>
+                                                        <td>{new Date(task.due_date).toLocaleDateString()}</td>
+                                                        <td>{toTitleCase(task.status)}</td>
+                                                        <td>
+                                                            <FaEdit
+                                                                className="action-icon edit-icon"
+                                                                onClick={() => navigate(`/edit-task/${task.id}`)}
+                                                            />
+                                                            <FaTrash
+                                                                className="action-icon delete-icon"
+                                                                onClick={() => deleteTask(task.id)}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p>You have no tasks</p>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-export default ViewTasks;
+const mapStateToProps = (state) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    firstLogin: state.auth.firstLogin,
+});
+
+export default connect(mapStateToProps)(ViewTasks);

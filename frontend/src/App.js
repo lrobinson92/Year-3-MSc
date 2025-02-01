@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Home from './containers/Home';
 import Login from './containers/Login';
@@ -12,8 +13,11 @@ import ViewDocuments from "./containers/ViewDocuments";
 import ViewTeams from "./containers/ViewTeams";
 import ViewTasks from "./containers/ViewTasks";
 import ViewSOP from "./containers/ViewSOP";
-import New from "./containers/New";
-import Edit from "./containers/Edit";
+import CreateTeam from "./containers/CreateTeam";
+import EditTeam from "./containers/EditTeam";
+import InviteMember from "./containers/InviteMember";
+import EditTask from './containers/EditTask'; 
+import CreateTask from './containers/CreateTask';
 import './globalStyles.css';
 
 import { Provider } from "react-redux";
@@ -35,10 +39,13 @@ const App = () => (
                     <Route path="/view/dashboard" element={<Dashboard />} />
                     <Route path='/view/documents' element={<ViewDocuments />} />
                     <Route path='/view/teams' element={<ViewTeams />} />
+                    <Route path='/create-team' element={<CreateTeam />} />
+                    <Route path='/edit-team/:id' element={<EditTeam />} />
+                    <Route path="/invite-member/:teamId" element={<InviteMember />} />
                     <Route path='/view/tasks' element={<ViewTasks />} />
+                    <Route path="/edit-task/:id" element={<EditTask />} />
+                    <Route path="/create-task" element={<CreateTask />} />
                     <Route path='/view/sop' element={<ViewSOP />} />
-                    <Route path='/new' element={<New />} />
-                    <Route path='/edit' element={<Edit />} />
                     <Route path='*' element={<h1>Route Not Found</h1>} />
                 </Routes>            
             </Layout>

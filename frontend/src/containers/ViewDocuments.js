@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import SideNavbar from '../components/SideNavbar';
+import Sidebar from '../components/Sidebar';
 
 
 const ViewDocuments = ( {isAuthenticated }) => {
@@ -15,7 +15,7 @@ const ViewDocuments = ( {isAuthenticated }) => {
         <div>
             {/* Sidebar and Main Content */}
             <div className="d-flex">
-                <SideNavbar />
+                <Sidebar />
                 <div className="main-content" style={{ flex: 1, padding: '2rem' }}>
                     <div
                         style={{

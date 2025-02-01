@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
-
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, name, password=None):
         if not email:
@@ -11,7 +10,15 @@ class UserAccountManager(BaseUserManager):
         user = self.model(email=email, name=name)
 
         user.set_password(password) # built in function will hash password
-        user.save()
+        user.save(using=self._db)
+
+        return user
+    
+    def create_superuser(self, email, name, password=None):
+        user = self.create_user(email, name, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
 
         return user
         
@@ -35,7 +42,84 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self):
         return self.email
-
+    
     
 
+class Team(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(UserAccount, 
+        on_delete=models.CASCADE, 
+        related_name="created_teams"
+    )
+    members = models.ManyToManyField(
+        UserAccount,  # Reference your custom user model
+        through='TeamMembership',  # Specify the through model
+        related_name='teams'  # Allows reverse lookup like user.teams.all()
+    )
 
+    def __str__(self):
+        return self.name
+
+
+
+class TeamMembership(models.Model):
+    ROLE_CHOICES = [
+        ('owner', 'Owner'),
+        ('member', 'Member'),
+        ('admin', 'Admin'),
+    ]
+
+    user = models.ForeignKey(
+        UserAccount,
+        on_delete=models.CASCADE, 
+        related_name="team_memberships"
+    )
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE, 
+        related_name="team_memberships"
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='member'
+    )
+    
+    class Meta:
+        unique_together = ('user', 'team')  # Ensures no duplicate memberships
+
+    def __str__(self):
+        return f"{self.user.name} - {self.role} in {self.team.name}"
+
+class Task(models.Model):
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('complete', 'Complete'),
+    ]
+
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(
+        UserAccount, 
+        on_delete=models.SET_NULL, 
+        related_name='tasks',
+        null=True,
+        blank=True
+    )
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name='tasks',
+        null=True,
+        blank=True
+    )
+    due_date = models.DateField()
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='not_started'
+    )
+
+    def __str__(self):
+        return self.description

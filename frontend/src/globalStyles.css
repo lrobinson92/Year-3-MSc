@@ -10,6 +10,10 @@ body {
     min-height: 100vh;
 }
 
+.entry-container {
+    padding-top: 70px;
+}
+
 a {
     color: #111049; /* Link color */
 }
@@ -26,15 +30,82 @@ h1, h2, h3, h4, h5, h6 {
     color: #111049; /* Header color */
 }
 
-.white { /* override p for home page */
+.white p { /* override p for sidebar */
     color: #F2F2F7;
+}
+
+.user-greeting { /* New style for user greeting */
+    color: #f2f2f2; /* Lighter shade of blue */
+    font-size: 1.5em; /* Increase the font size */
+    font-weight: bold; /* Make the text bold */
+    margin-bottom: 20px; /* Add some space below the greeting */
+}
+
+.user-initial {
+    display: inline-block;
+    width: 60px; /* Increase the width */
+    height: 60px; /* Increase the height */
+    line-height: 60px; /* Match the height for vertical centering */
+    border-radius: 50%;
+    background-color: #111049; /* Circle background color */
+    color: #f2f2f2; /* Text color */
+    text-align: center;
+    font-size: 2em; /* Increase the font size */
+    font-weight: bold;
+    margin-right: 10px; /* Space between circle and greeting */
+}
+
+/* Circle with initial */
+.member-initial {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+    background-color: #111049; /* Circle background color */
+    color: #f2f2f2; /* Text color */
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-right: 10px; /* Space between circle and text */
+    position: relative;
+}
+
+/* Tooltip */
+.member-initial:hover::after {
+    content: attr(data-fullname); /* Display full name */
+    position: absolute;
+    bottom: 100%; /* Position above the circle */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #111049;
+    color: #f2f2f2;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    font-size: 0.8em; /* Smaller font size for tooltip */
+}
+
+/* Remove bullet points and display inline */
+ul.member-list {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+    display: flex; /* Display items inline */
+    flex-wrap: wrap; /* Allow wrapping to the next line if needed */
+}
+
+ul.member-list li {
+    margin-right: 10px; /* Space between list items */
 }
 
 /* Top Banner Image with Slanted Effect */
 .image-container {
     position: relative;
     overflow: hidden;
-    height: 300px;
+    height: 225px;
+    margin-top: 66px;
     margin-bottom: 20px;
 }
 
@@ -42,8 +113,9 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: skewY(-5deg);
+    transform: skewY(-3deg);
     transform-origin: top left;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Style for all buttons */
@@ -79,6 +151,25 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
 }
 
+/* Specific style for the create team link in ViewTeams */
+.create-new-link {
+    margin-left: auto; /* Push the link to the right */
+}
+
+/* Custom styles for the dropdown menu */
+.custom-dropdown-menu {
+    background-color: #111049; /* Navy background */
+    color: white; /* White text */
+}
+
+.custom-dropdown-menu .dropdown-item {
+    color: white; /* White text for dropdown items */
+}
+
+.custom-dropdown-menu .dropdown-item:hover {
+    background-color: #111049; /* Darker navy on hover */
+}
+
 .row {
     display: flex; /* Ensures child elements stretch */
     align-items: stretch;
@@ -89,9 +180,9 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* Keeps content spaced properly */
-    border-color: #F2F2F7;
-    background-color: #F2F2F7;
-    box-shadow: none;
+    border-color: #111049;
+    background-color: #f2f2f2;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Adjust card images */
@@ -103,11 +194,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar styles */
 .sidebar {
-    position: fixed; /* Makes it fixed on the left */
-    top: 58px;
+    position: fixed;
+    height: calc(100vh - 66px); 
+    overflow-y: auto;
     bottom: 0;
     left: 0;
-    z-index: 1000; /* Ensures it stays above other content */
+    z-index: 1000;  /*Ensures it stays above other content */
     padding: 1rem; /* Adds padding inside the sidebar */
     overflow-y: auto; /* Enables scrolling if content exceeds height */
     width: 250px; /* Fixed width for the sidebar */
@@ -119,15 +211,15 @@ h1, h2, h3, h4, h5, h6 {
 /* Sidebar links */
 .sidebar .nav-link {
     color: #F2F2F7; /* Navy blue for links */
-    padding: 0.75rem 1rem; /* Adjusts padding for better spacing */
-    border-radius: 4px; /* Rounded edges */
+    font-size: 1.2em;
+    padding: 10px 15px; /* Adjusts padding for better spacing */
     display: block; /* Ensures the full width of the link is clickable */
     transition: background-color 0.3s, font-weight 0.3s; /* Smooth hover effects */
 }
 
 /* Hover effect for links */
-.sidebar .nav-link:hover {
-    font-weight: bold;
+.sidebar .nav-item .nav-link:hover {
+    text-decoration: underline;
 }
 
 /* Active link */
@@ -138,12 +230,77 @@ h1, h2, h3, h4, h5, h6 {
 /* Adjust content area to accommodate the sidebar */
 .main-content {
     margin-left: 250px; /* Matches the sidebar width */
-    padding: 1rem;
-    min-height: 100vh; /* Ensure the content fills the viewport height */
-    color: #F2F2F7;
+    padding: 2rem;
+    min-height: 92vh; /* Ensure the content fills the viewport height */
+    flex: 1;
+    background: #111049;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 4rem;
+}
+
+.recent-items-card {
+    width: 100%;
+    padding: 2rem;
+    background: #F2F2F7;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: calc(92vh - 4rem);
 }
 
 .navbar {
     position: fixed;
     width: 100%;
+    top: 0px;
+}
+
+.back-arrow {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #F2F2F7;
+    position: absolute;
+    left: 0;
+    top: 80px;
+    margin-left: 20px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+}
+
+.btn-primary,
+.btn-danger {
+    margin-right: 10px;
+}
+
+.btn-primary:last-child,
+.btn-danger:last-child {
+    margin-right: 0;
+}
+
+.action-icon {
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #111049; /* Purple color */
+    margin-right: 10px;
+}
+
+.action-icon:hover {
+    color: #0b0b33; /* Darker purple on hover */
+}
+
+.delete-icon {
+    color: #c21628; /* Red color for delete icon */
+}
+
+.delete-icon:hover {
+    color: #9e1220; /* Darker red on hover */
 }

@@ -17,14 +17,22 @@ const Signup = ({ signup, isAuthenticated }) => {
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const onSubmit = e => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (password === re_password) {
-            signup(name, email, password, re_password);
-            setAccountCreated(true);
+            try {
+                const result = await signup(name, email, password, re_password);
+                if (result === "success") {
+                    alert("Account created! Please check your email to verify your account.");
+                    setAccountCreated(true);
+                }
+            } catch (error) {
+                alert(error); // Display the error message (e.g., "Email already in use.")
+            }
+        } else {
+            alert("Passwords do not match!");
         }
-        
     };
 
     if (isAuthenticated) {
@@ -36,7 +44,7 @@ const Signup = ({ signup, isAuthenticated }) => {
     }
 
     return (
-        <div className='container mt-5'>
+        <div className='container mt-5 entry-container'>
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <h1 className="text-center mb-4" >Sign Up</h1>
                 <form onSubmit={onSubmit}>
