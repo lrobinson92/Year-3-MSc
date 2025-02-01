@@ -79,6 +79,18 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Task.objects.filter(assigned_to=user)
     
+    @action(detail=False, methods=['get'], url_path='user-and-team-tasks')
+    def user_and_team_tasks(self, request):
+        user = request.user
+        user_tasks = Task.objects.filter(assigned_to=user)
+        team_tasks = Task.objects.filter(team__team_memberships__user=user).exclude(assigned_to=user)
+        user_tasks_serializer = TaskSerializer(user_tasks, many=True)
+        team_tasks_serializer = TaskSerializer(team_tasks, many=True)
+        return Response({
+            'user_tasks': user_tasks_serializer.data,
+            'team_tasks': team_tasks_serializer.data
+        })
+    
 class UsersInSameTeamView(generics.ListAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = [IsAuthenticated]

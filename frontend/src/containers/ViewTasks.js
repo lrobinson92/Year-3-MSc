@@ -3,24 +3,35 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
-import { toTitleCase } from '../utils/utils';
-import { FaEdit, FaTrash } from 'react-icons/fa'; // Import the icons
+import { toTitleCase, formatDate } from '../utils/utils';
+import { FaEdit, FaTrash, FaChevronDown, FaChevronUp  } from 'react-icons/fa'; // Import the icons
 
 const ViewTasks = ({ isAuthenticated, firstLogin }) => {
-    const [tasks, setTasks] = useState([]);
+    const [userTasks, setUserTasks] = useState([]);
+    const [teamTasks, setTeamTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [expandedRow, setExpandedRow] = useState(null);
 
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTasks = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/`, {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/user-and-team-tasks/`, {
                     withCredentials: true,  // Include credentials in the request
                 });
                 console.log('Fetched tasks:', res.data); // Log the fetched tasks
-                setTasks(res.data.sort((a, b) => new Date(a.due_date) - new Date(b.due_date)));
+                const sortTasks = (tasks) => {
+                    return tasks.sort((a, b) => {
+                        if (a.team_name < b.team_name) return -1;
+                        if (a.team_name > b.team_name) return 1;
+                        return new Date(a.due_date) - new Date(b.due_date);
+                    });
+                };
+
+                setUserTasks(sortTasks(res.data.user_tasks));
+                setTeamTasks(sortTasks(res.data.team_tasks));
             } catch (err) {
                 console.error(err);
                 setError('Failed to fetch tasks');
@@ -32,25 +43,29 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
         fetchTasks();
     }, []);
 
-    const deleteTask = async (taskId) => {
+    const handleDelete = async (taskId) => {
         try {
             await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, {
                 withCredentials: true,
+                headers: {
+                    'Authorization': `JWT ${localStorage.getItem('access')}`
+                }
             });
-            setTasks(tasks.filter(task => task.id !== taskId));
-            alert("Task deleted successfully!");
+            setUserTasks(userTasks.filter(task => task.id !== taskId));
+            setTeamTasks(teamTasks.filter(task => task.id !== taskId));
         } catch (err) {
             console.error('Failed to delete task:', err);
-            alert("Failed to delete task. Please try again.");
+            setError('Failed to delete task');
         }
     };
 
+    const toggleRowExpand = (taskId) => {
+        setExpandedRow(expandedRow === taskId ? null : taskId);
+    };
+
+
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
-    }
-
-    if (firstLogin) {
-        return <Navigate to="/dashboard" />;
     }
 
     if (loading) {
@@ -74,50 +89,100 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                 + Create New Task
                             </Link>
                         </div>  
-                        {/* Recent Items */}
-                        <div className="row">
-                            {Array.isArray(tasks) && tasks.length > 0 ? (
-                                <div className="col-12 mb-3">
-                                    <div className="table-responsive">
-                                        <table className="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Description</th>
-                                                    <th>Assigned To</th>
-                                                    <th>Team</th>
-                                                    <th>Due Date</th>
-                                                    <th>Status</th>
-                                                    <th>Actions</th>
+                        {userTasks.length > 0 ? (
+                            <div className="table-responsive">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Assigned To</th>
+                                            <th>Team</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {userTasks.map(task => (
+                                            <>
+                                                <tr key={task.id}>
+                                                    <td className="truncate-description" onClick={() => toggleRowExpand(task.id)}>
+                                                        <span>{task.description}</span> 
+                                                    </td>
+                                                    <td>{task.assigned_to_name}</td>
+                                                    <td>{task.team_name}</td>
+                                                    <td>{formatDate(task.due_date)}</td>
+                                                    <td>{toTitleCase(task.status)}</td>
+                                                    <td>
+                                                        <FaEdit className="action-icon edit-icon" onClick={() => navigate(`/edit-task/${task.id}`)} />
+                                                        <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(task.id)} />
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {tasks.map((task) => (
-                                                    <tr key={task.id}>
-                                                        <td>{task.description}</td>
-                                                        <td>{task.assigned_to_name}</td>
-                                                        <td>{task.team_name}</td>
-                                                        <td>{new Date(task.due_date).toLocaleDateString()}</td>
-                                                        <td>{toTitleCase(task.status)}</td>
-                                                        <td>
-                                                            <FaEdit
-                                                                className="action-icon edit-icon"
-                                                                onClick={() => navigate(`/edit-task/${task.id}`)}
-                                                            />
-                                                            <FaTrash
-                                                                className="action-icon delete-icon"
-                                                                onClick={() => deleteTask(task.id)}
-                                                            />
+                                                {expandedRow === task.id && (
+                                                    <tr className="expanded-row">
+                                                        <td colSpan="6">
+                                                            <div className="expanded-content">
+                                                                <strong>Full Description:</strong> {task.description}
+                                                            </div>
                                                         </td>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ) : (
-                                <p>You have no tasks</p>
-                            )}
+                                                )}
+                                            </>
+                                        ))}
+                                    </tbody>
+                            </table>
                         </div>
+                    ) : (
+                        <p>You have no tasks</p>
+                    )}
+
+                    <h2>Team Tasks</h2>
+                        {teamTasks.length > 0 ? (
+                            <div className="table-responsive">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Assigned To</th>
+                                            <th>Team</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {teamTasks.map(task => (
+                                            <>
+                                            <tr key={task.id}>
+                                                <td className="truncate-description" onClick={() => toggleRowExpand(task.id)}>
+                                                    <span>{task.description}</span> 
+                                                </td>
+                                                <td>{task.assigned_to_name}</td>
+                                                <td>{task.team_name}</td>
+                                                <td>{formatDate(task.due_date)}</td>
+                                                <td>{toTitleCase(task.status)}</td>
+                                                <td>
+                                                    <FaEdit className="action-icon edit-icon" onClick={() => navigate(`/edit-task/${task.id}`)} />
+                                                    <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(task.id)} />
+                                                </td>
+                                            </tr>
+                                            {expandedRow === task.id && (
+                                                <tr className="expanded-row">
+                                                    <td colSpan="6">
+                                                        <div className="expanded-content">
+                                                            <strong>Full Description:</strong> {task.description}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p>Your teams have no tasks</p>
+                        )}
                     </div>
                 </div>
             </div>
