@@ -1,14 +1,14 @@
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Team, TeamMembership, Task
+from .models import UserAccount, Team, TeamMembership, Task
 from .serializers import TeamSerializer, TaskSerializer
-from django.shortcuts import get_object_or_404
 from django.contrib.sites.shortcuts import get_current_site
+from sop.serializers import UserCreateSerializer
 
 User = get_user_model()
 
@@ -62,7 +62,14 @@ class TeamViewSet(viewsets.ModelViewSet):
         )
 
         return Response({'message': 'Invitation sent and user added to the team'}, status=status.HTTP_200_OK)   
-    
+
+    @action(detail=True, methods=['get'], url_path='users-in-same-team')
+    def users_in_same_team(self, request, pk=None):
+        team = self.get_object()
+        users = UserAccount.objects.filter(team_memberships__team=team)
+        serializer = UserCreateSerializer(users, many=True)
+        return Response(serializer.data)
+
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -72,3 +79,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Task.objects.filter(assigned_to=user)
     
+class UsersInSameTeamView(generics.ListAPIView):
+    serializer_class = UserCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        team_id = self.kwargs['team_id']
+        return UserAccount.objects.filter(team_memberships__team_id=team_id)

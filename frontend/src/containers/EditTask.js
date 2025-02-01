@@ -16,7 +16,6 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
         due_date: '',
         status: 'not_started',
     });
-    const [users, setUsers] = useState([]);
     const [teams, setTeams] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
 
@@ -25,9 +24,8 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
     useEffect(() => {
         const fetchTaskAndData = async () => {
             try {
-                const [taskRes, usersRes, teamsRes] = await Promise.all([
+                const [taskRes, teamsRes] = await Promise.all([
                     axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, { withCredentials: true }),
-                    axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, { withCredentials: true }),
                     axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/`, { withCredentials: true }),
                 ]);
 
@@ -39,7 +37,6 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                     status: taskRes.data.status,
                 });
 
-                setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
                 setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : []);
             } catch (err) {
                 console.error('Failed to fetch task or data:', err);
@@ -50,35 +47,22 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
     }, [id]);
 
     useEffect(() => {
+        // Fetch users based on the selected team
         const fetchUsers = async () => {
-            try {
-                const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/users/`, {
-                    withCredentials: true,
-                });
-                console.log("Users from API:", usersRes.data); // Check for 'teams' field here
-                setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
-            } catch (err) {
-                console.error("Failed to fetch users:", err);
+            if (team) {
+                try {
+                    const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/${team}/users-in-same-team/`, { withCredentials: true });
+                    setFilteredUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+                } catch (err) {
+                    console.error('Failed to fetch users:', err);
+                }
+            } else {
+                setFilteredUsers(user ? [user] : []);
             }
         };
+
         fetchUsers();
-    }, []);
-
-    useEffect(() => {
-        // Debugging the team filtering logic
-        if (team) {
-            console.log(`Filtering users for team: ${team}`);
-            const filtered = users.filter(user => {
-                console.log(`Checking user: ${user.name}, Teams: ${user.teams}`);
-                return Array.isArray(user.teams) && user.teams.includes(parseInt(team));
-            });
-
-            console.log('Filtered Users:', filtered);
-            setFilteredUsers(filtered);
-        } else {
-            setFilteredUsers(user ? [user] : []);
-        }
-    }, [team, users, user]);
+    }, [team, user]);
 
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -102,7 +86,6 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
             <FaArrowLeft className="back-arrow" onClick={() => navigate('/view/tasks')} />
             <div className="card p-4 mx-auto" style={{ maxWidth: '400px' }}>
                 <div className="d-flex align-items-center mb-4">
-                    
                     <h1 className="text-center flex-grow-1 mb-0">Edit Task</h1>
                 </div>
                 <form onSubmit={onSubmit}>
