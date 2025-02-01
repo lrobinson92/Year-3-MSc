@@ -51,8 +51,8 @@ jobs:
 
       - name: Run backend tests
         run: |
-          python manage.py migrate
-          python manage.py test sop.tests
+          python backend/manage.py migrate
+          python backend/manage.py test sop.tests
           
       - name: Lint with flake8
         run: |
