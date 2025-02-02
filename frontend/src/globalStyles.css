@@ -313,8 +313,9 @@ ul.member-list li {
 }
 
 .table th, .table td {
-    padding: 12px 15px;
+    padding: 8px 10px;
     text-align: left;
+    vertical-align: middle;
 }
 
 .table th {
@@ -326,6 +327,7 @@ ul.member-list li {
 .table td {
     background: #F2F2F7;
     border-bottom: none;
+    vertical-align: middle;
 }
 
 .table-responsive {
@@ -341,6 +343,8 @@ ul.member-list li {
     cursor: pointer;
 }
 
+
+
 /* Expanded row styling */
 .expanded-row {
     background-color: #f9f9f9;
@@ -352,3 +356,50 @@ ul.member-list li {
     background-color: #eaeaea;
     border-radius: 6px;
 }
+
+.status-width {
+    width: 40px; /* Set a specific width for the status column */
+    text-align: center; /* Center the icon horizontally */
+}
+
+.status-icon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    text-align: center; /* Center content horizontally */
+    width: 100%;
+}
+
+.status-icon .tooltip {
+    visibility: hidden;
+    width: 120px;
+    background-color: #111049;
+    color: #F2F2F7;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the icon */
+    left: 50%;
+    margin-left: -60px; /* Use half of the tooltip width to center it */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.status-icon .tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #111049 transparent transparent transparent;
+}
+
+.status-icon:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+

@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import axios from '../utils/axiosConfig';
 import { toTitleCase, formatDate } from '../utils/utils';
-import { FaEdit, FaTrash, FaChevronDown, FaChevronUp  } from 'react-icons/fa'; // Import the icons
+import { FaEdit, FaTrash, FaSpinner, FaCircle, FaCheckCircle } from 'react-icons/fa'; // Import the icons
+import { LuCircleDashed } from 'react-icons/lu';
 
 const ViewTasks = ({ isAuthenticated, firstLogin }) => {
     const [userTasks, setUserTasks] = useState([]);
@@ -63,6 +64,36 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
         setExpandedRow(expandedRow === taskId ? null : taskId);
     };
 
+    const getStatusIconWithTooltip = (status) => {
+        let icon;
+        let iconColor;
+    
+        switch (status.toLowerCase()) {
+            case 'in_progress':
+                icon = <FaSpinner className="fa-spin" />;
+                iconColor = '#d35400'; // purple for in progress
+                break;
+            case 'not_started':
+                icon = <LuCircleDashed />;
+                iconColor = '#717186'; // grey for not started
+                break;
+            case 'complete':
+                icon = <FaCheckCircle />;
+                iconColor = '#0FA312'; // Green for completed
+                break;
+            default:
+                icon = <FaCircle />;
+                iconColor = '#95a5a6'; // red for unknown status
+        }
+    
+        return (
+            <div className="status-icon" style={{ color: iconColor }}>
+                {icon}
+                <span className="tooltip">{toTitleCase(status)}</span>
+            </div>
+        );
+    };
+
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -94,25 +125,25 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                 <table className="table">
                                     <thead>
                                         <tr>
+                                            <th>Status</th>
                                             <th>Description</th>
                                             <th>Assigned To</th>
                                             <th>Team</th>
                                             <th>Due Date</th>
-                                            <th>Status</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {userTasks.map(task => (
-                                            <>
-                                                <tr key={task.id}>
+                                            <React.Fragment key={task.id}>
+                                                <tr>
+                                                <td className="status-width">{getStatusIconWithTooltip(task.status)}</td>
                                                     <td className="truncate-description" onClick={() => toggleRowExpand(task.id)}>
-                                                        <span>{task.description}</span> 
+                                                        <span>{task.description}</span>
                                                     </td>
                                                     <td>{task.assigned_to_name}</td>
                                                     <td>{task.team_name}</td>
                                                     <td>{formatDate(task.due_date)}</td>
-                                                    <td>{toTitleCase(task.status)}</td>
                                                     <td>
                                                         <FaEdit className="action-icon edit-icon" onClick={() => navigate(`/edit-task/${task.id}`)} />
                                                         <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(task.id)} />
@@ -127,7 +158,7 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                                         </td>
                                                     </tr>
                                                 )}
-                                            </>
+                                            </React.Fragment>
                                         ))}
                                     </tbody>
                             </table>
@@ -142,40 +173,40 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
                                 <table className="table">
                                     <thead>
                                         <tr>
+                                            <th>Status</th>
                                             <th>Description</th>
                                             <th>Assigned To</th>
                                             <th>Team</th>
                                             <th>Due Date</th>
-                                            <th>Status</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {teamTasks.map(task => (
-                                            <>
-                                            <tr key={task.id}>
-                                                <td className="truncate-description" onClick={() => toggleRowExpand(task.id)}>
-                                                    <span>{task.description}</span> 
-                                                </td>
-                                                <td>{task.assigned_to_name}</td>
-                                                <td>{task.team_name}</td>
-                                                <td>{formatDate(task.due_date)}</td>
-                                                <td>{toTitleCase(task.status)}</td>
-                                                <td>
-                                                    <FaEdit className="action-icon edit-icon" onClick={() => navigate(`/edit-task/${task.id}`)} />
-                                                    <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(task.id)} />
-                                                </td>
-                                            </tr>
-                                            {expandedRow === task.id && (
-                                                <tr className="expanded-row">
-                                                    <td colSpan="6">
-                                                        <div className="expanded-content">
-                                                            <strong>Full Description:</strong> {task.description}
-                                                        </div>
+                                            <React.Fragment key={task.id}>
+                                                <tr>
+                                                    <td className="status-width">{getStatusIconWithTooltip(task.status)}</td>
+                                                    <td className="truncate-description" onClick={() => toggleRowExpand(task.id)}>
+                                                        <span>{task.description}</span>
+                                                    </td>
+                                                    <td>{task.assigned_to_name}</td>
+                                                    <td>{task.team_name}</td>
+                                                    <td>{formatDate(task.due_date)}</td>
+                                                    <td>
+                                                        <FaEdit className="action-icon edit-icon" onClick={() => navigate(`/edit-task/${task.id}`)} />
+                                                        <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(task.id)} />
                                                     </td>
                                                 </tr>
-                                            )}
-                                        </>
+                                                {expandedRow === task.id && (
+                                                    <tr className="expanded-row">
+                                                        <td colSpan="6">
+                                                            <div className="expanded-content">
+                                                                <strong>Full Description:</strong> {task.description}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         ))}
                                     </tbody>
                                 </table>
