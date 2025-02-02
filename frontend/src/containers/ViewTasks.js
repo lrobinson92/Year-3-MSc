@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
-import axios from '../utils/axiosConfig';
+import { fetchTasks, deleteTask } from '../actions/task'; // Ensure correct import
 import { toTitleCase, formatDate } from '../utils/utils';
 import { FaEdit, FaTrash, FaSpinner, FaCircle, FaCheckCircle } from 'react-icons/fa'; // Import the icons
 import { LuCircleDashed } from 'react-icons/lu';
 
-const ViewTasks = ({ isAuthenticated, firstLogin }) => {
-    const [userTasks, setUserTasks] = useState([]);
-    const [teamTasks, setTeamTasks] = useState([]);
+const ViewTasks = ({ isAuthenticated, userTasks, teamTasks, fetchTasks, deleteTask }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedRow, setExpandedRow] = useState(null);
@@ -17,22 +15,9 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchTasks = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/user-and-team-tasks/`, {
-                    withCredentials: true,  // Include credentials in the request
-                });
-                console.log('Fetched tasks:', res.data); // Log the fetched tasks
-                const sortTasks = (tasks) => {
-                    return tasks.sort((a, b) => {
-                        if (a.team_name < b.team_name) return -1;
-                        if (a.team_name > b.team_name) return 1;
-                        return new Date(a.due_date) - new Date(b.due_date);
-                    });
-                };
-
-                setUserTasks(sortTasks(res.data.user_tasks));
-                setTeamTasks(sortTasks(res.data.team_tasks));
+                await fetchTasks();
             } catch (err) {
                 console.error(err);
                 setError('Failed to fetch tasks');
@@ -41,19 +26,17 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
             }
         };
 
-        fetchTasks();
-    }, []);
+        fetchData();
+    }, [fetchTasks]);
 
     const handleDelete = async (taskId) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this task?");
+        if (!confirmDelete) {
+            return;
+        }
+
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, {
-                withCredentials: true,
-                headers: {
-                    'Authorization': `JWT ${localStorage.getItem('access')}`
-                }
-            });
-            setUserTasks(userTasks.filter(task => task.id !== taskId));
-            setTeamTasks(teamTasks.filter(task => task.id !== taskId));
+            await deleteTask(taskId);
         } catch (err) {
             console.error('Failed to delete task:', err);
             setError('Failed to delete task');
@@ -93,7 +76,6 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
             </div>
         );
     };
-
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -223,7 +205,8 @@ const ViewTasks = ({ isAuthenticated, firstLogin }) => {
 
 const mapStateToProps = (state) => ({
     isAuthenticated: state.auth.isAuthenticated,
-    firstLogin: state.auth.firstLogin,
+    userTasks: state.task.userTasks,
+    teamTasks: state.task.teamTasks,
 });
 
-export default connect(mapStateToProps)(ViewTasks);
+export default connect(mapStateToProps, { fetchTasks, deleteTask })(ViewTasks);
