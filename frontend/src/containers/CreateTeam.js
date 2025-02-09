@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Navigate, useNavigate  } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { createTeam } from '../actions/team';
-import axios from '../utils/axiosConfig';
 import { FaArrowLeft } from 'react-icons/fa';
 
 const CreateTeam = ({ createTeam, isAuthenticated }) => {

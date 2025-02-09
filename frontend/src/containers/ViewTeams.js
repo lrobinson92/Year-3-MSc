@@ -6,7 +6,7 @@ import axios from '../utils/axiosConfig';
 import { Dropdown } from 'react-bootstrap';
 import CustomToggle from '../utils/customToggle';
 import { deleteTeam, editTeam } from '../actions/team'; // Import the editTeam action
-import InviteMember from './InviteMember';
+
 
 const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
     const [teams, setTeams] = useState([]);
