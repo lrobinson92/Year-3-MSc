@@ -18,6 +18,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
     });
     const [teams, setTeams] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
+    const [canEdit, setCanEdit] = useState(false);
 
     const { description, assigned_to, team, due_date, status } = formData;
 
@@ -25,9 +26,12 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
         const fetchTaskAndData = async () => {
             try {
                 const [taskRes, teamsRes] = await Promise.all([
-                    axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, { withCredentials: true }),
+                    axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, { withCredentials: true, headers: { 'Authorization': `JWT ${localStorage.getItem('access')}` } }),
                     axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/`, { withCredentials: true }),
                 ]);
+
+                console.log('Fetched task:', taskRes.data); // Debugging log
+                console.log('Fetched teams:', teamsRes.data); // Debugging log
 
                 setFormData({
                     description: taskRes.data.description,
@@ -38,13 +42,18 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                 });
 
                 setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : []);
+
+                // Check if the user can edit the task
+                const isOwner = teamsRes.data.some(team => team.id === taskRes.data.team && team.members.some(membership => membership.user === user.id && membership.role === 'owner'));
+                const isAssignedUser = taskRes.data.assigned_to === user.id;
+                setCanEdit(isOwner || isAssignedUser);
             } catch (err) {
                 console.error('Failed to fetch task or data:', err);
             }
         };
 
         fetchTaskAndData();
-    }, [id]);
+    }, [id, user.id]);
 
     useEffect(() => {
         // Fetch users based on the selected team
@@ -52,6 +61,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
             if (team) {
                 try {
                     const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/${team}/users-in-same-team/`, { withCredentials: true });
+                    console.log('Fetched users:', usersRes.data); // Debugging log
                     setFilteredUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
                 } catch (err) {
                     console.error('Failed to fetch users:', err);
@@ -98,6 +108,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                             value={description}
                             onChange={onChange}
                             required
+                            disabled={!canEdit}
                         />
                     </div>
                     <div className="form-group mb-3">
@@ -107,6 +118,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                             name="team"
                             value={team}
                             onChange={onChange}
+                            disabled={!canEdit}
                         >
                             <option value="">Select Team</option>
                             {teams.map(team => (
@@ -124,6 +136,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                             value={assigned_to}
                             onChange={onChange}
                             required
+                            disabled={!canEdit}
                         >
                             <option value="">Select Member</option>
                             {filteredUsers.map(user => (
@@ -142,6 +155,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                             value={due_date}
                             onChange={onChange}
                             required
+                            disabled={!canEdit}
                         />
                     </div>
                     <div className="form-group mb-3">
@@ -151,17 +165,24 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
                             name="status"
                             value={status}
                             onChange={onChange}
+                            disabled={!canEdit}
                         >
                             <option value="not_started">Not Started</option>
                             <option value="in_progress">In Progress</option>
                             <option value="complete">Complete</option>
                         </select>
                     </div>
-                    <div className="d-flex justify-content-between">
-                        <button className="btn btn-primary w-100" type="submit">
-                            Update Task
-                        </button>
-                    </div>
+                    {canEdit ? (
+                        <div className="d-flex justify-content-between">
+                            <button className="btn btn-primary w-100" type="submit">
+                                Update Task
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="alert alert-warning" role="alert">
+                            You cannot update this task unless it is assigned to you or you are the team owner.
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

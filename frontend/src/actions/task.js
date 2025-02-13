@@ -5,7 +5,9 @@ import {
     DELETE_TASK_SUCCESS, 
     DELETE_TASK_FAIL,
     EDIT_TASK_SUCCESS,
-    EDIT_TASK_FAIL  
+    EDIT_TASK_FAIL,
+    FETCH_TASKS_SUCCESS,
+    FETCH_TASKS_FAIL
 } from './types';
 
 export const createTask = (description, assigned_to, team, due_date, status) => async dispatch => {
@@ -75,6 +77,28 @@ export const editTask = (taskId, description, assigned_to, team, due_date, statu
     } catch (err) {
         dispatch({
             type: EDIT_TASK_FAIL
+        });
+        throw err;
+    }
+};
+
+export const fetchTasks = () => async dispatch => {
+    const config = {
+        headers: {
+            'Authorization': `JWT ${localStorage.getItem('access')}`
+        }
+    };
+
+    try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/user-and-team-tasks/`, config);
+
+        dispatch({
+            type: FETCH_TASKS_SUCCESS,
+            payload: res.data
+        });
+    } catch (err) {
+        dispatch({
+            type: FETCH_TASKS_FAIL
         });
         throw err;
     }

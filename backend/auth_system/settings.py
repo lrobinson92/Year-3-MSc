@@ -100,6 +100,8 @@ DATABASES = {
     }
 }
 
+# Construct the DATABASE_URL from the DATABASES settings
+DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PWD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -110,8 +112,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -185,9 +185,7 @@ DJOSER = {
     "SET_PASSWORD_RETYPE": True,
     "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}/",
     "SEND_ACTIVATION_EMAIL": True,
- #   "USER_CREATE_PASSWORD_RETYPE": True,
     "ACTIVATION_URL": "auth/activate/{uid}/{token}",
- #   "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
     "SERIALIZERS": {
         "user_create": "sop.serializers.UserCreateSerializer", # custom serializer
         "user": "sop.serializers.UserCreateSerializer",

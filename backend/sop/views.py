@@ -1,14 +1,15 @@
-from rest_framework import status, generics
+from rest_framework import status, generics, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q  # Import Q
 from .models import UserAccount, Team, TeamMembership, Task
 from .serializers import TeamSerializer, TaskSerializer
 from django.contrib.sites.shortcuts import get_current_site
 from sop.serializers import UserCreateSerializer
+from .permissions import IsOwnerOrAssignedUser
 
 User = get_user_model()
 
@@ -56,7 +57,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         send_mail(
             mail_subject,
             message,
-            'from@example.com',
+            'SOPify Admin',
             [email],
             fail_silently=False,
         )
@@ -73,11 +74,26 @@ class TeamViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAssignedUser]
 
     def get_queryset(self):
         user = self.request.user
-        return Task.objects.filter(assigned_to=user)
+        return Task.objects.filter(
+            Q(assigned_to=user) | 
+            Q(team__team_memberships__user=user)
+        ).distinct()
+    
+    @action(detail=False, methods=['get'], url_path='user-and-team-tasks')
+    def user_and_team_tasks(self, request):
+        user = request.user
+        user_tasks = Task.objects.filter(assigned_to=user)
+        team_tasks = Task.objects.filter(team__team_memberships__user=user).exclude(assigned_to=user)
+        user_tasks_serializer = TaskSerializer(user_tasks, many=True)
+        team_tasks_serializer = TaskSerializer(team_tasks, many=True)
+        return Response({
+            'user_tasks': user_tasks_serializer.data,
+            'team_tasks': team_tasks_serializer.data
+        })
     
 class UsersInSameTeamView(generics.ListAPIView):
     serializer_class = UserCreateSerializer

@@ -24,7 +24,7 @@ const Sidebar = ( { user } ) => {
                 <ul className="nav flex-column">
                     <li className="nav-item">
                         <NavLink
-                            to="/login"
+                            to="/view/dashboard"
                             className={({ isActive }) =>
                                 isActive ? 'nav-link active' : 'nav-link'
                             }
@@ -33,14 +33,14 @@ const Sidebar = ( { user } ) => {
                         </NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink
-                            to="/view/documents"
-                            className={({ isActive }) =>
-                                isActive ? 'nav-link active' : 'nav-link'
-                            }
-                        >
-                            All Documents
-                        </NavLink>
+                    <NavLink
+                        to="/view/documents"
+                        className={({ isActive }) =>
+                            isActive ? 'nav-link active' : 'nav-link'
+                        }
+                    >
+                        All Documents
+                    </NavLink>
                     </li>
                     <li className="nav-item">
                         <NavLink

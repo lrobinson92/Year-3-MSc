@@ -4,11 +4,15 @@ import {
     DELETE_TASK_SUCCESS, 
     DELETE_TASK_FAIL,
     EDIT_TASK_SUCCESS,
-    EDIT_TASK_FAIL 
+    EDIT_TASK_FAIL,
+    FETCH_TASKS_SUCCESS,
+    FETCH_TASKS_FAIL 
 } from '../actions/types';
 
 const initialState = {
     tasks: [],
+    userTasks: [],
+    teamTasks: [],
     error: null
 };
 
@@ -48,6 +52,18 @@ function taskReducer(state = initialState, action) {
             return {
                 ...state,
                 error: 'Failed to edit task'
+            };
+        case FETCH_TASKS_SUCCESS:
+            return {
+                ...state,
+                userTasks: payload.user_tasks,
+                teamTasks: payload.team_tasks,
+                error: null
+            };
+        case FETCH_TASKS_FAIL:
+            return {
+                ...state,
+                error: 'Failed to fetch tasks'
             };
         default:
             return state;
