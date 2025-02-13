@@ -1,15 +1,21 @@
+import requests
 from rest_framework import status, generics, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.db.models import Q  # Import Q
-from .models import UserAccount, Team, TeamMembership, Task
+from django.http import JsonResponse, HttpResponse
+from .models import UserAccount, Team, TeamMembership, Task, Document
 from .serializers import TeamSerializer, TaskSerializer
 from django.contrib.sites.shortcuts import get_current_site
-from sop.serializers import UserCreateSerializer
+from sop.serializers import UserCreateSerializer, DocumentSerializer
 from .permissions import IsOwnerOrAssignedUser
+from django.shortcuts import redirect
+import urllib.parse
+from django.conf import settings
 
 User = get_user_model()
 
@@ -102,3 +108,112 @@ class UsersInSameTeamView(generics.ListAPIView):
     def get_queryset(self):
         team_id = self.kwargs['team_id']
         return UserAccount.objects.filter(team_memberships__team_id=team_id)
+    
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Document.objects.filter(owner=user) | Document.objects.filter(team__members=user)
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def get_documents(self, request):
+        user = request.user
+        documents = Document.objects.filter(owner=user) | Document.objects.filter(team__in=user.teams.all())
+        return JsonResponse({"documents": list(documents.values())})
+
+class OneDriveLoginView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        params = {
+            "client_id": settings.ONEDRIVE_CLIENT_ID,
+            "response_type": "code",
+            "redirect_uri": settings.ONEDRIVE_REDIRECT_URI,
+            "scope": "Files.ReadWrite.All User.Read",
+        }
+        auth_url = f"{settings.ONEDRIVE_AUTH_URL}?{urllib.parse.urlencode(params)}"
+        return redirect(auth_url)
+    
+class OneDriveCallbackView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        code = request.GET.get("code")
+        if not code:
+            return JsonResponse({"error": "No authorization code provided"}, status=400)
+
+        token_data = {
+            "client_id": settings.ONEDRIVE_CLIENT_ID,
+            "client_secret": settings.ONEDRIVE_CLIENT_SECRET,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": settings.ONEDRIVE_REDIRECT_URI,
+        }
+
+        response = requests.post(settings.ONEDRIVE_TOKEN_URL, data=token_data)
+        token_json = response.json()
+
+        if "access_token" in token_json:
+            request.session["onedrive_access_token"] = token_json["access_token"]
+            return redirect("/view/documents")  # Redirect to your app's dashboard
+        else:
+            return JsonResponse({"error": "Failed to authenticate"}, status=400)
+        
+class OneDriveUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        access_token = request.session.get("onedrive_access_token")
+        if not access_token:
+            return JsonResponse({"error": "User not authenticated"}, status=401)
+
+        file = request.FILES["file"]
+        file_data = file.read()
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/octet-stream",
+        }
+
+        upload_url = f"{settings.ONEDRIVE_API_URL}/me/drive/root:/{file.name}:/content"
+        response = requests.put(upload_url, headers=headers, data=file_data)
+
+        if response.status_code == 201 or response.status_code == 200:
+            file_metadata = response.json()
+            # Store metadata in PostgreSQL
+            Document.objects.create(
+                title=file_metadata["name"],
+                file_url=file_metadata["@microsoft.graph.downloadUrl"],
+                owner=request.user,
+            )
+            return JsonResponse({"message": "File uploaded", "data": file_metadata})
+        return JsonResponse({"error": "Upload failed"}, status=400)
+    
+class OneDriveDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, file_id):
+        access_token = request.session.get("onedrive_access_token")
+        if not access_token:
+            return JsonResponse({"error": "User not authenticated"}, status=401)
+
+        try:
+            file = Document.objects.get(id=file_id)
+        except Document.DoesNotExist:
+            return JsonResponse({"error": "File not found"}, status=404)
+
+        if file.owner != request.user and request.user not in file.team.members.all():
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+        download_url = f"{settings.ONEDRIVE_API_URL}/me/drive/items/{file_id}/content"
+        response = requests.get(download_url, headers=headers)
+
+        if response.status_code == 200:
+            return HttpResponse(response.content, content_type="application/octet-stream")
+        return JsonResponse({"error": "Download failed"}, status=400)

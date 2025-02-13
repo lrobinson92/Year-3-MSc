@@ -15,8 +15,9 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 
-
 load_dotenv()
+
+
 
 
 
@@ -116,6 +117,14 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# OneDrive API settings
+ONEDRIVE_CLIENT_ID = os.getenv('ONEDRIVE_CLIENT_ID')
+ONEDRIVE_CLIENT_SECRET = os.getenv('ONEDRIVE_CLIENT_SECRET')
+ONEDRIVE_REDIRECT_URI = os.getenv('ONEDRIVE_REDIRECT_URI')
+ONEDRIVE_AUTH_URL = os.getenv('ONEDRIVE_AUTH_URL')
+ONEDRIVE_TOKEN_URL = os.getenv('ONEDRIVE_TOKEN_URL')
+ONEDRIVE_API_URL = "https://graph.microsoft.com/v1.0"
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -210,3 +219,4 @@ CSRF_TRUSTED_ORIGINS = [
 
 CSRF_COOKIE_HTTPONLY = False  # Ensure the frontend can access the cookie
 CSRF_COOKIE_SECURE = True    # Use True if HTTPS is enabled
+

@@ -3,7 +3,7 @@ from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerialize
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from sop.models import Team, TeamMembership, Task, UserAccount
+from sop.models import Team, TeamMembership, Task, Document
 
 User = get_user_model()
 
@@ -56,3 +56,9 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def get_assigned_to_name(self, obj):
         return obj.assigned_to.name if obj.assigned_to else 'Unassigned'
+    
+
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = ['id', 'google_drive_id', 'name', 'owner', 'team']

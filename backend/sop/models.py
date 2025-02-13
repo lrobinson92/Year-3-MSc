@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.conf import settings
+from django.utils import timezone
 
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, name, password=None):
@@ -123,3 +125,15 @@ class Task(models.Model):
 
     def __str__(self):
         return self.description
+    
+    
+class Document(models.Model):
+    title = models.CharField(max_length=255)
+    file_url = models.URLField(default='https://example.com/default-url')
+    owner = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    team = models.ForeignKey("Team", on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title

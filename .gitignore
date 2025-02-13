@@ -183,4 +183,7 @@ dmypy.json
 # profiling data
 .prof
 
+
+backend/client_secret.json
+
 # End of https://www.toptal.com/developers/gitignore/api/django
