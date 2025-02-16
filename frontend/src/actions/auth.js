@@ -1,4 +1,6 @@
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
+import { getCSRFToken } from '../utils/axiosConfig'; 
+import { isTokenExpired } from '../utils/auth';
 import {
     LOGIN_SUCCESS,
     LOGIN_FAIL,
@@ -14,72 +16,53 @@ import {
     PASSWORD_RESET_SUCCESS,
     PASSWORD_RESET_FAIL,
     PASSWORD_RESET_CONFIRM_SUCCESS,
-    PASSWORD_RESET_CONFIRM_FAIL
+    PASSWORD_RESET_CONFIRM_FAIL,
+    REFRESH_TOKEN_SUCCESS,
+    REFRESH_TOKEN_FAIL  
 } from './types';
 
 export const checkAuthenticated = () => async dispatch => {
-    if (localStorage.getItem('access')) {
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        };
-
-        const body = JSON.stringify({ token: localStorage.getItem('access')});
-
+    
         try {
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/verify/`, body, config);
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/auth/users/me/`, {
+                withCredentials: true, // This ensures cookies are sent along with the request
+            });
 
-            if (res.data.code !== 'token_not_valid') {
-                dispatch({
-                    type: AUTHENTICATED_SUCCESS
-                });
-            } else {
-                dispatch({
-                    type: AUTHENTICATED_FAIL
-                });
-            }
-
+            dispatch({
+                type: AUTHENTICATED_SUCCESS
+            });
         } catch (err) {
             dispatch({
                 type: AUTHENTICATED_FAIL
             });
         }
-
-    } else {
-        dispatch({
-            type: AUTHENTICATED_FAIL
-        });
-    }
 };
 
+
 export const load_user = () => async dispatch => {
-    if (localStorage.getItem('access')){
+    if (localStorage.getItem('access')) {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `JWT ${localStorage.getItem('access')}`,
-                'Accept': 'application/json'
-            }
+            },
+            withCredentials: true
         };
 
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/auth/users/me/`, config);
-    
+
             dispatch({
                 type: USER_LOADED_SUCCESS,
                 payload: res.data
             });
         } catch (err) {
             dispatch({
-                type: USER_LOADED_FAIL            
+                type: USER_LOADED_FAIL
             });
-    
         }
     } else {
         dispatch({
-            type: USER_LOADED_FAIL            
+            type: USER_LOADED_FAIL
         });
     }
 };
@@ -88,7 +71,8 @@ export const signup = (name, email, password, re_password) => async dispatch => 
     const config = {
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        withCredentials: true,
     };
 
     const body = JSON.stringify({ name, email, password, re_password });
@@ -116,8 +100,9 @@ export const verify = (uid, token) => async dispatch => {
 
     const config = {
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
+        withCredentials: true,
     };
 
     const body = JSON.stringify({ uid, token });
@@ -138,21 +123,20 @@ export const verify = (uid, token) => async dispatch => {
 
 
 export const login = (email, password) => async dispatch => {
-    const config = {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
-
+    
     const body = JSON.stringify({ email, password });
 
+    console.log("Sending login request:", body);  // Debugging line
+
     try {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/create/`, body, config);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/create/`, body);
 
         dispatch({
             type: LOGIN_SUCCESS,
             payload: res.data
         });
+
+        console.log("Login response:", res.data);  // Debugging line
 
         dispatch(load_user());
     } catch (err) {
@@ -171,11 +155,12 @@ export const resetFirstLogin = () => (dispatch) => {
 
 
 export const reset_password = (email) => async dispatch => {
-     const config = {
+    const config = {
         headers: {
             'Content-Type': 'application/json'
-        }
-     };
+        },
+        withCredentials: true,
+    };
 
      const body = JSON.stringify({ email });
 
@@ -195,8 +180,9 @@ export const reset_password = (email) => async dispatch => {
 export const reset_password_confirm = (uid, token, new_password, re_new_password) => async dispatch => {
     const config = {
         headers: {
-                        'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
+        withCredentials: true,
     };
 
     const body = JSON.stringify({ uid, token, new_password, re_new_password });
@@ -214,8 +200,21 @@ export const reset_password_confirm = (uid, token, new_password, re_new_password
      }
 };
 
-export const logout = () => dispatch => {
-    dispatch({
-        type: LOGOUT
-    });
+export const logout = () => async dispatch => {
+    const config = {
+        headers: {
+            'X-CSRFToken': getCSRFToken(),  // Include CSRF token in headers
+        },
+        withCredentials: true,
+    };
+
+    try {
+        await axios.post(`${process.env.REACT_APP_API_URL}/auth/logout/`, {}, config);
+
+        dispatch({
+            type: LOGOUT
+        });
+    } catch (err) {
+        console.error("Logout failed", err);
+    }
 };

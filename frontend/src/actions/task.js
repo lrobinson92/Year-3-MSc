@@ -1,4 +1,5 @@
 import axios from '../utils/axiosConfig';
+import { getCSRFToken } from '../utils/axiosConfig';
 import { 
     CREATE_TASK_SUCCESS, 
     CREATE_TASK_FAIL, 
@@ -13,9 +14,9 @@ import {
 export const createTask = (description, assigned_to, team, due_date, status) => async dispatch => {
     const config = {
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+            'Content-Type': 'application/json'
+        },
+        withCredentials: true
     };
 
     const body = JSON.stringify({ description, assigned_to, team, due_date, status });
@@ -38,8 +39,9 @@ export const createTask = (description, assigned_to, team, due_date, status) => 
 export const deleteTask = (taskId) => async dispatch => {
     const config = {
         headers: {
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+            'Content-Type': 'application/json'
+        },
+        withCredentials: true
     };
 
     try {
@@ -60,9 +62,9 @@ export const deleteTask = (taskId) => async dispatch => {
 export const editTask = (taskId, description, assigned_to, team, due_date, status) => async dispatch => {
     const config = {
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+            'Content-Type': 'application/json'
+        },
+        withCredentials: true
     };
 
     const body = JSON.stringify({ description, assigned_to, team, due_date, status });
@@ -83,11 +85,15 @@ export const editTask = (taskId, description, assigned_to, team, due_date, statu
 };
 
 export const fetchTasks = () => async dispatch => {
+    const accessToken = getCookie('access_token'); // Utility to retrieve cookie
+
     const config = {
         headers: {
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+            'Content-Type': 'application/json',
+        },
+        withCredentials: true,  // Make sure cookies are sent with the request
     };
+
 
     try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/user-and-team-tasks/`, config);
@@ -102,4 +108,12 @@ export const fetchTasks = () => async dispatch => {
         });
         throw err;
     }
+};
+
+// Helper function to get the cookie by name
+const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
 };

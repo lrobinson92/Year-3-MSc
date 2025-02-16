@@ -74,8 +74,6 @@ const initialState = {
         case LOGIN_FAIL:
         case SIGNUP_FAIL:
         case LOGOUT:
-            localStorage.removeItem('access');
-            localStorage.removeItem('refresh');
             return {
                 ...state,
                 access: null,

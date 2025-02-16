@@ -6,14 +6,14 @@ import {
     DELETE_TEAM_FAIL,
     EDIT_TEAM_SUCCESS,
     EDIT_TEAM_FAIL  
-    } from './types';
+} from './types';
 
 export const createTeam = (name, description) => async dispatch => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+        },
+        withCredentials: true
     };
 
     const body = JSON.stringify({ name, description });
@@ -36,8 +36,9 @@ export const createTeam = (name, description) => async dispatch => {
 export const deleteTeam = (teamId) => async dispatch => {
     const config = {
         headers: {
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+            'Content-Type': 'application/json',
+        },
+        withCredentials: true
     };
 
     try {
@@ -59,8 +60,8 @@ export const editTeam = (teamId, name, description) => async dispatch => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+        },
+        withCredentials: true
     };
 
     const body = JSON.stringify({ name, description });

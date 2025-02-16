@@ -17,6 +17,7 @@ from django.shortcuts import redirect
 import urllib.parse
 from django.conf import settings
 
+
 User = get_user_model()
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -89,7 +90,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             Q(team__team_memberships__user=user)
         ).distinct()
     
-    @action(detail=False, methods=['get'], url_path='user-and-team-tasks')
+    @action(detail=False, methods=['get'], url_path='user-and-team-tasks', permission_classes=[IsAuthenticated])
     def user_and_team_tasks(self, request):
         user = request.user
         user_tasks = Task.objects.filter(assigned_to=user)
@@ -217,3 +218,4 @@ class OneDriveDownloadView(APIView):
         if response.status_code == 200:
             return HttpResponse(response.content, content_type="application/octet-stream")
         return JsonResponse({"error": "Download failed"}, status=400)
+    

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
     'djoser',
     'sop',
     "anymail",
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auth_system.middleware.JWTAuthenticationMiddleware',  
 ]
 
 ROOT_URLCONF = 'auth_system.urls'
@@ -173,14 +175,29 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated"
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    #    "backend.auth_system.authentication.CookieJWTAuthentication",
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        "rest_framework_simplejwt.authentication.JWTAuthentication",        
     ),
 }
 
 SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("JWT",),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+
+    # enable JWT Cookies
+    "AUTH_HEADER_TYPES": ("Bearer",),   # avoids conflicts with "JWT"  
+    "AUTH_COOKIE": "access_token",  # Name of the cookie
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_DOMAIN": None,  # Keep it None for localhost
+    "AUTH_COOKIE_SECURE": False,  # Change to True in production (requires HTTPS)
+    "AUTH_COOKIE_HTTP_ONLY": True,  # Prevent JavaScript access
+    "AUTH_COOKIE_PATH": "/",  # Available to all routes
+    "AUTH_COOKIE_SAMESITE": "Lax",  # Controls cross-site requests
 }
 
 
@@ -199,7 +216,8 @@ DJOSER = {
         "user_create": "sop.serializers.UserCreateSerializer", # custom serializer
         "user": "sop.serializers.UserCreateSerializer",
         "user_delete": "sop.serializers.UserDeleteSerializer",
-    }
+    },
+    "LOGIN_FIELD": "email",
 }
 
 
@@ -207,10 +225,13 @@ DJOSER = {
 AUTH_USER_MODEL = 'sop.UserAccount'
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  # Add your frontend URL here
+CORS_ALLOW_ALL_ORIGINS = True
+#CORS_ORIGIN_WHITELIST = [
+ #   'http://localhost:3000',  # Add your frontend URL here
     #    "https://your-frontend-domain.com",  # Production domain
-]
+#]
+
+
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # Add your frontend URL here
@@ -218,5 +239,5 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 CSRF_COOKIE_HTTPONLY = False  # Ensure the frontend can access the cookie
-CSRF_COOKIE_SECURE = True    # Use True if HTTPS is enabled
-
+CSRF_COOKIE_SECURE = False    # Use True if HTTPS is enabled, in production
+SESSION_COOKIE_SECURE = False

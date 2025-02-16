@@ -15,7 +15,9 @@ const InviteMember = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/invite_member/`, { email });
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/invite_member/`, { email }, {
+                withCredentials: true
+            });
             setMessage(res.data.message);
             alert("Invitation sent successfully!");
             navigate('/view/teams');

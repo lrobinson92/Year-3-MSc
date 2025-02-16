@@ -13,7 +13,7 @@ const ViewTasks = ({ isAuthenticated, userTasks, teamTasks, fetchTasks, deleteTa
     const [expandedRow, setExpandedRow] = useState(null);
 
     const navigate = useNavigate();
-
+    console.log("Access Token:", document.cookie);  // Check if access token exists
     useEffect(() => {
         const fetchData = async () => {
             try {

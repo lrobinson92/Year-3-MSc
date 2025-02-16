@@ -61,4 +61,4 @@ class TaskSerializer(serializers.ModelSerializer):
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ['id', 'google_drive_id', 'name', 'owner', 'team']
+        fields = ['id', 'one_drive_id', 'name', 'owner', 'team']
