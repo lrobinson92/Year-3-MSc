@@ -18,7 +18,7 @@ const ViewTeams = ({ isAuthenticated, firstLogin, deleteTeam }) => {
     useEffect(() => {
         const fetchTeams = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/`, {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/teams/`, {
                     withCredentials: true,  // Include credentials in the request
                 });
                 setTeams(res.data);

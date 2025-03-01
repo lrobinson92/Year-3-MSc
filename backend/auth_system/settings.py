@@ -53,13 +53,13 @@ INSTALLED_APPS = [
     'djoser',
     'sop',
     "anymail",
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -120,12 +120,25 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 # OneDrive API settings
-ONEDRIVE_CLIENT_ID = os.getenv('ONEDRIVE_CLIENT_ID')
-ONEDRIVE_CLIENT_SECRET = os.getenv('ONEDRIVE_CLIENT_SECRET')
-ONEDRIVE_REDIRECT_URI = os.getenv('ONEDRIVE_REDIRECT_URI')
-ONEDRIVE_AUTH_URL = os.getenv('ONEDRIVE_AUTH_URL')
-ONEDRIVE_TOKEN_URL = os.getenv('ONEDRIVE_TOKEN_URL')
+#ONEDRIVE_CLIENT_ID = os.getenv('ONEDRIVE_CLIENT_ID')
+#ONEDRIVE_CLIENT_SECRET = os.getenv('ONEDRIVE_CLIENT_SECRET')
+#ONEDRIVE_REDIRECT_URI = os.getenv('ONEDRIVE_REDIRECT_URI')
+#ONEDRIVE_AUTH_URL = os.getenv('ONEDRIVE_AUTH_URL')
+#ONEDRIVE_TOKEN_URL = os.getenv('ONEDRIVE_TOKEN_URL')
 ONEDRIVE_API_URL = "https://graph.microsoft.com/v1.0"
+
+
+# CLIENT_VALUE = VEQ8Q~kp67DwISN-x74t62u--T1G6FredNl-9bk7 # this is what I needed in postman rather than client secret
+#ONEDRIVE_CLIENT_ID = '2b826e87-862d-4227-b109-c17542639ecc'
+#ONEDRIVE_CLIENT_SECRET = 'VEQ8Q~kp67DwISN-x74t62u--T1G6FredNl-9bk7'
+ONEDRIVE_REDIRECT_URI = 'http://localhost:8000/onedrive/callback/'
+#ONEDRIVE_CLIENT_SECRET = 'mid8Q~y3FyjYXJGYcmIPkbhGw-7fMOeAj7hU1bCw'
+
+#SOPify_2
+ONEDRIVE_CLIENT_SECRET = '6Bi8Q~OPGCDOttPe1oMkkfI2EQLAvBiOsnNTObAn'
+ONEDRIVE_CLIENT_ID = '1250b861-54f0-499c-9d96-95082cb01529'
+ONEDRIVE_AUTH_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+ONEDRIVE_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -175,7 +188,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated"
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
-    #    "backend.auth_system.authentication.CookieJWTAuthentication",
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         "rest_framework_simplejwt.authentication.JWTAuthentication",        
@@ -225,12 +237,13 @@ DJOSER = {
 AUTH_USER_MODEL = 'sop.UserAccount'
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Your React frontend
+]
 #CORS_ORIGIN_WHITELIST = [
  #   'http://localhost:3000',  # Add your frontend URL here
     #    "https://your-frontend-domain.com",  # Production domain
 #]
-
 
 
 CSRF_TRUSTED_ORIGINS = [
@@ -238,6 +251,25 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-CSRF_COOKIE_HTTPONLY = False  # Ensure the frontend can access the cookie
+CSRF_COOKIE_HTTPONLY = True  # Ensure the frontend can access the cookie
 CSRF_COOKIE_SECURE = False    # Use True if HTTPS is enabled, in production
 SESSION_COOKIE_SECURE = False
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",  # Log file
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}

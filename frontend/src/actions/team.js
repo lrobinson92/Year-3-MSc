@@ -19,7 +19,7 @@ export const createTeam = (name, description) => async dispatch => {
     const body = JSON.stringify({ name, description });
 
     try {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/sop/teams/`, body, config);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/teams/`, body, config);
 
         dispatch({
             type: CREATE_TEAM_SUCCESS,
@@ -42,7 +42,7 @@ export const deleteTeam = (teamId) => async dispatch => {
     };
 
     try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/`, config);
+        await axios.delete(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/`, config);
 
         dispatch({
             type: DELETE_TEAM_SUCCESS,
@@ -67,7 +67,7 @@ export const editTeam = (teamId, name, description) => async dispatch => {
     const body = JSON.stringify({ name, description });
 
     try {
-        const res = await axios.put(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/`, body, config);
+        const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/`, body, config);
 
         dispatch({
             type: EDIT_TEAM_SUCCESS,

@@ -13,10 +13,39 @@ from .serializers import TeamSerializer, TaskSerializer
 from django.contrib.sites.shortcuts import get_current_site
 from sop.serializers import UserCreateSerializer, DocumentSerializer
 from .permissions import IsOwnerOrAssignedUser
-from django.shortcuts import redirect
+from django.shortcuts import HttpResponseRedirect
 import urllib.parse
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)  # Use Django's logging system
+
+def refresh_onedrive_token(user):
+    """Refresh OneDrive access token using the refresh token."""
+    refresh_token = user.profile.onedrive_refresh_token
+    if not refresh_token:
+        return None  # No refresh token available, user needs to re-authenticate
+
+    token_data = {
+        "client_id": settings.ONEDRIVE_CLIENT_ID,
+        "client_secret": settings.ONEDRIVE_CLIENT_SECRET,
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+
+    response = requests.post(settings.ONEDRIVE_TOKEN_URL, data=token_data)
+    token_json = response.json()
+
+    logger.info("OneDrive Refresh Token Response: %s", token_json)  # Log the response
+
+    if "access_token" in token_json:
+        # Save new tokens in the user's profile
+        user.profile.onedrive_access_token = token_json["access_token"]
+        user.profile.onedrive_refresh_token = token_json.get("refresh_token", refresh_token)  # Keep old refresh token if not provided
+        user.profile.save()
+        return token_json["access_token"]
+    else:
+        return None  # Refresh failed, user may need to log in again
 
 User = get_user_model()
 
@@ -110,50 +139,45 @@ class UsersInSameTeamView(generics.ListAPIView):
         team_id = self.kwargs['team_id']
         return UserAccount.objects.filter(team_memberships__team_id=team_id)
     
-class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return Document.objects.filter(owner=user) | Document.objects.filter(team__members=user)
-    
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def get_documents(self, request):
-        user = request.user
-        documents = Document.objects.filter(owner=user) | Document.objects.filter(team__in=user.teams.all())
-        return JsonResponse({"documents": list(documents.values())})
 
 class OneDriveLoginView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "User is not authenticated"}, status=401)
+
         params = {
             "client_id": settings.ONEDRIVE_CLIENT_ID,
             "response_type": "code",
             "redirect_uri": settings.ONEDRIVE_REDIRECT_URI,
-            "scope": "Files.ReadWrite.All User.Read",
+            "scope": "Files.Read.All Files.ReadWrite.All offline_access User.Read",
+            "response_mode": "query",
         }
         auth_url = f"{settings.ONEDRIVE_AUTH_URL}?{urllib.parse.urlencode(params)}"
-        return redirect(auth_url)
+
+        return JsonResponse({"auth_url": auth_url})
     
+
+    
+
 class OneDriveCallbackView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # ❌ No authentication needed here
 
     def get(self, request):
+        
         code = request.GET.get("code")
         if not code:
+            logger.error("❌ No authorization code received")
             return JsonResponse({"error": "No authorization code provided"}, status=400)
 
         token_data = {
             "client_id": settings.ONEDRIVE_CLIENT_ID,
             "client_secret": settings.ONEDRIVE_CLIENT_SECRET,
-            "code": code,
             "grant_type": "authorization_code",
+            "code": code,
             "redirect_uri": settings.ONEDRIVE_REDIRECT_URI,
         }
 
@@ -161,61 +185,65 @@ class OneDriveCallbackView(APIView):
         token_json = response.json()
 
         if "access_token" in token_json:
-            request.session["onedrive_access_token"] = token_json["access_token"]
-            return redirect("/view/documents")  # Redirect to your app's dashboard
-        else:
-            return JsonResponse({"error": "Failed to authenticate"}, status=400)
-        
-class OneDriveUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+            access_token = token_json["access_token"]
+            refresh_token = token_json.get("refresh_token")
 
-    def post(self, request):
-        access_token = request.session.get("onedrive_access_token")
-        if not access_token:
-            return JsonResponse({"error": "User not authenticated"}, status=401)
-
-        file = request.FILES["file"]
-        file_data = file.read()
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/octet-stream",
-        }
-
-        upload_url = f"{settings.ONEDRIVE_API_URL}/me/drive/root:/{file.name}:/content"
-        response = requests.put(upload_url, headers=headers, data=file_data)
-
-        if response.status_code == 201 or response.status_code == 200:
-            file_metadata = response.json()
-            # Store metadata in PostgreSQL
-            Document.objects.create(
-                title=file_metadata["name"],
-                file_url=file_metadata["@microsoft.graph.downloadUrl"],
-                owner=request.user,
+            response = JsonResponse({"success": True})
+            response.set_cookie(
+                "onedrive_access_token",
+                access_token,
+                httponly=True,
+                secure=False,  # Set to True in production (requires HTTPS)
+                samesite="Lax",
             )
-            return JsonResponse({"message": "File uploaded", "data": file_metadata})
-        return JsonResponse({"error": "Upload failed"}, status=400)
-    
-class OneDriveDownloadView(APIView):
+            response.set_cookie(
+                "onedrive_refresh_token",
+                refresh_token,
+                httponly=True,
+                secure=False,  # Set to True in production (requires HTTPS)
+                samesite="Lax",
+            )
+
+            logger.info("✅ Successfully authenticated, attempting to redirect...")
+
+            return JsonResponse({"redirect": "http://localhost:3000/view/documents"})
+
+
+        logger.error("❌ Failed to authenticate with OneDrive")
+        return JsonResponse({"error": "Failed to authenticate"}, status=400)
+        
+
+class OneDriveFilesView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, file_id):
-        access_token = request.session.get("onedrive_access_token")
+    def get(self, request):
+        user = request.user
+        access_token = user.profile.onedrive_access_token
+
         if not access_token:
-            return JsonResponse({"error": "User not authenticated"}, status=401)
-
-        try:
-            file = Document.objects.get(id=file_id)
-        except Document.DoesNotExist:
-            return JsonResponse({"error": "File not found"}, status=404)
-
-        if file.owner != request.user and request.user not in file.team.members.all():
-            return JsonResponse({"error": "Unauthorized"}, status=403)
+            return JsonResponse({"error": "User is not authenticated with OneDrive"}, status=403)
 
         headers = {"Authorization": f"Bearer {access_token}"}
-        download_url = f"{settings.ONEDRIVE_API_URL}/me/drive/items/{file_id}/content"
-        response = requests.get(download_url, headers=headers)
+        url = "https://graph.microsoft.com/v1.0/me/drive/root/children"
 
-        if response.status_code == 200:
-            return HttpResponse(response.content, content_type="application/octet-stream")
-        return JsonResponse({"error": "Download failed"}, status=400)
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 401:  # Token expired
+            new_access_token = refresh_onedrive_token(user)
+            if new_access_token:
+                headers["Authorization"] = f"Bearer {new_access_token}"
+                response = requests.get(url, headers=headers)
+            else:
+                return JsonResponse({"error": "Failed to refresh token, please re-authenticate"}, status=401)
+
+        return JsonResponse(response.json())
+
+# debugging callback
+def debug_callback(request):
+    logger.info("✅ Django received callback request!")
+    print("✅ Django received callback request!")
+    return JsonResponse({"message": "Callback received!", "query_params": request.GET})
+
+
+
     

@@ -22,7 +22,7 @@ export const createTask = (description, assigned_to, team, due_date, status) => 
     const body = JSON.stringify({ description, assigned_to, team, due_date, status });
 
     try {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/sop/tasks/`, body, config);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/tasks/`, body, config);
 
         dispatch({
             type: CREATE_TASK_SUCCESS,
@@ -45,7 +45,7 @@ export const deleteTask = (taskId) => async dispatch => {
     };
 
     try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, config);
+        await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/`, config);
 
         dispatch({
             type: DELETE_TASK_SUCCESS,
@@ -70,7 +70,7 @@ export const editTask = (taskId, description, assigned_to, team, due_date, statu
     const body = JSON.stringify({ description, assigned_to, team, due_date, status });
 
     try {
-        const res = await axios.put(`${process.env.REACT_APP_API_URL}/sop/tasks/${taskId}/`, body, config);
+        const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/`, body, config);
 
         dispatch({
             type: EDIT_TASK_SUCCESS,
@@ -96,7 +96,7 @@ export const fetchTasks = () => async dispatch => {
 
 
     try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/user-and-team-tasks/`, config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/user-and-team-tasks/`, config);
 
         dispatch({
             type: FETCH_TASKS_SUCCESS,

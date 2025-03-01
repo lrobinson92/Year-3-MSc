@@ -6,17 +6,23 @@ import {
     UPLOAD_DOCUMENT_FAIL 
 } from './types';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 export const onedriveLogin = () => async dispatch => {
     try {
-        window.location.href = `${process.env.REACT_APP_API_URL}/onedrive/login/`;
-        dispatch({
-            type: ONEDRIVE_LOGIN_SUCCESS
-        });
+        const res = await axios.get(`${API_URL}/api/onedrive/login/`,
+            { withCredentials: true }
+        );
+        console.log("✅ Received auth URL:", res.data.auth_url); // Debugging line
+        if (res.data.auth_url) {
+            window.location.href = res.data.auth_url;
+        } else {
+            console.error("❌ No auth URL received from backend.");
+        }
+        dispatch({ type: ONEDRIVE_LOGIN_SUCCESS });
     } catch (err) {
-        dispatch({
-            type: ONEDRIVE_LOGIN_FAIL
-        });
-        throw err;
+        console.error("❌ OneDrive login failed:", err);
+        dispatch({ type: ONEDRIVE_LOGIN_FAIL });
     }
 };
 
@@ -25,7 +31,7 @@ export const uploadDocument = (file) => async dispatch => {
     formData.append("file", file);
 
     try {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/onedrive/upload`, formData, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/onedrive/upload`, formData, {
             withCredentials: true,
             headers: {
                 'Content-Type': 'multipart/form-data'
