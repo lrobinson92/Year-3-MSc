@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from '../utils/axiosConfig';
+import { getCookie } from '../utils/axiosConfig';
 import { FaArrowLeft } from 'react-icons/fa';
 import { editTask } from '../actions/task';
 
@@ -25,32 +26,52 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
     useEffect(() => {
         const fetchTaskAndData = async () => {
             try {
-                const [taskRes, teamsRes] = await Promise.all([
-                    axios.get(`${process.env.REACT_APP_API_URL}/sop/tasks/${id}/`, { withCredentials: true, headers: { 'Authorization': `JWT ${localStorage.getItem('access')}` } }),
-                    axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/`, { withCredentials: true }),
+                // Cookies are automatically sent in requests because `withCredentials: true` is enabled.
+                const taskListURL = `${process.env.REACT_APP_API_URL}/api/tasks/user-and-team-tasks/`;
+                const teamsURL = `${process.env.REACT_APP_API_URL}/api/teams/`;
+        
+                const [tasksRes, teamsRes] = await Promise.all([
+                    axios.get(taskListURL),
+                    axios.get(teamsURL),
                 ]);
+        
+                // 🔥 Find the task with the correct ID
+                const allTasks = [...tasksRes.data.user_tasks, ...tasksRes.data.team_tasks];
+                const taskData = allTasks.find(task => task.id === parseInt(id));
+        
+                if (!taskData) {
+                    console.error("❌ Task not found in response.");
+                    return;
+                }
 
-                console.log('Fetched task:', taskRes.data); // Debugging log
-                console.log('Fetched teams:', teamsRes.data); // Debugging log
+                console.log("🔍 Task Data:", taskData);
+                console.log("🔍 Task Assigned To:", taskData.assigned_to);
+                console.log("🔍 Setting Assigned To: ", taskData.assigned_to ? taskData.assigned_to.toString() : '');
 
+                // ✅ Populate the form with task data
                 setFormData({
-                    description: taskRes.data.description,
-                    assigned_to: taskRes.data.assigned_to ? taskRes.data.assigned_to.toString() : '',
-                    team: taskRes.data.team ? taskRes.data.team.toString() : '',
-                    due_date: taskRes.data.due_date,
-                    status: taskRes.data.status,
+                    description: taskData.description || '',
+                    assigned_to: taskData.assigned_to ? taskData.assigned_to.toString() : '',
+                    team: taskData.team ? taskData.team.toString() : '',
+                    due_date: taskData.due_date || '',
+                    status: taskData.status || 'not_started',
                 });
-
+        
                 setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : []);
 
-                // Check if the user can edit the task
-                const isOwner = teamsRes.data.some(team => team.id === taskRes.data.team && team.members.some(membership => membership.user === user.id && membership.role === 'owner'));
-                const isAssignedUser = taskRes.data.assigned_to === user.id;
-                setCanEdit(isOwner || isAssignedUser);
+                const isAssignedUser = taskData.assigned_to === user.id;
+                const isOwner = teamsRes.data.some(team => 
+                    team.id === taskData.team && 
+                    team.members.some(membership => membership.user === user.id && membership.role === 'owner')
+                );
+                setCanEdit(isAssignedUser || isOwner);
+        
             } catch (err) {
-                console.error('Failed to fetch task or data:', err);
+                console.error('❌ Failed to fetch task or teams:', err);
             }
         };
+        
+
 
         fetchTaskAndData();
     }, [id, user.id]);
@@ -60,7 +81,7 @@ const EditTask = ({ isAuthenticated, user, editTask }) => {
         const fetchUsers = async () => {
             if (team) {
                 try {
-                    const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/${team}/users-in-same-team/`, { withCredentials: true });
+                    const usersRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/teams/${team}/users-in-same-team/`, { withCredentials: true });
                     console.log('Fetched users:', usersRes.data); // Debugging log
                     setFilteredUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
                 } catch (err) {

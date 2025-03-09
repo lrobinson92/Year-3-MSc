@@ -61,4 +61,4 @@ class TaskSerializer(serializers.ModelSerializer):
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ['id', 'one_drive_id', 'name', 'owner', 'team']
+        fields = ['id', 'title', 'file_url', 'owner', 'team', 'created_at', 'updated_at']

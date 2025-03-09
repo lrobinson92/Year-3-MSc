@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -189,6 +190,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         "rest_framework_simplejwt.authentication.JWTAuthentication",        
     ),
@@ -245,9 +247,28 @@ CORS_ALLOWED_ORIGINS = [
     #    "https://your-frontend-domain.com",  # Production domain
 #]
 
+CORS_ALLOW_METHODS = [  # Ensure all necessary HTTP methods are allowed
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
 
+# ✅ Explicitly allow Authorization header
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "accept",
+    "origin",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Change this in production!
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000', 'https://login.microsoftonline.com'  # Add your frontend URL here
+    'http://localhost:3000', 'http://localhost:8000'  # Add your frontend URL here
 ]
 
 

@@ -18,24 +18,6 @@ const ViewDocuments = ({ isAuthenticated, onedriveLogin, uploadDocument }) => {
     const [searchParams] = useSearchParams();
     const onedriveToken = searchParams.get("onedrive_token");
 
-    useEffect(() => {
-        const fetchTokens = async () => {
-            if (onedriveToken) {
-                try {
-                    const response = await fetch(`http://localhost:8000/onedrive/callback/?code=${onedriveToken}`);
-                    const data = await response.json();
-                    if (data.redirect) {
-                        window.location = data.redirect;  // ✅ Force frontend redirect
-                    }
-                } catch (error) {
-                    console.error("Error:", error);
-                }
-            }
-        };
-
-        fetchTokens();
-    }, [onedriveToken]);
-
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
     }

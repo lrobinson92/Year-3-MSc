@@ -18,13 +18,14 @@ const EditTeam = ({ editTeam }) => {
         // Fetch team data based on the ID
         const fetchTeam = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/sop/teams/${id}/`, {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/teams/${id}/`, {
                     withCredentials: true,
                 });
                 setFormData({ name: res.data.name, description: res.data.description });
                 setLoading(false);
             } catch (err) {
                 console.error('Failed to fetch team data:', err);
+                setLoading(false);
             }
         };
         fetchTeam();
