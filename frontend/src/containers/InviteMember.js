@@ -8,21 +8,23 @@ const InviteMember = () => {
     const navigate = useNavigate(); // For redirecting after invite
 
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState('member');
     const [message, setMessage] = useState('');
 
     const onChange = (e) => setEmail(e.target.value);
+    const onChangeRole = (e) => setRole(e.target.value);
 
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/sop/teams/${teamId}/invite_member/`, { email }, {
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/invite_member/`, { email , role }, {
                 withCredentials: true
             });
             setMessage(res.data.message);
             alert("Invitation sent successfully!");
             navigate('/view/teams');
         } catch (err) {
-            setMessage('Failed to send invitation');
+            setMessage('Failed to send invitation, user may already be a member!');
         }
     };
 
@@ -41,6 +43,14 @@ const InviteMember = () => {
                             onChange={onChange}
                             required
                         />
+                    </div>
+                    <div className="form-group mb-3">
+                        <label>Select Role</label>
+                        <select className="form-control" value={role} onChange={onChangeRole}>
+                            <option value="member">Member</option>
+                            <option value="admin">Admin</option>
+                            <option value="owner">Owner</option>
+                        </select>
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Invite</button>
                 </form>
