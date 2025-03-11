@@ -59,6 +59,9 @@ class TaskSerializer(serializers.ModelSerializer):
     
 
 class DocumentSerializer(serializers.ModelSerializer):
+    team_name = serializers.ReadOnlyField(source='team.name')
+    owner_name = serializers.ReadOnlyField(source='owner.name')
+
     class Meta:
         model = Document
-        fields = ['id', 'title', 'file_url', 'owner', 'team', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'file_url', 'owner', 'owner_name', 'team', 'team_name', 'created_at', 'updated_at']

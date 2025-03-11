@@ -57,12 +57,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -272,8 +271,11 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-CSRF_COOKIE_HTTPONLY = True  # Ensure the frontend can access the cookie
+CSRF_COOKIE_HTTPONLY = False  # Ensure the frontend can access the cookie
 CSRF_COOKIE_SECURE = False    # Use True if HTTPS is enabled, in production
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = False
 
 LOGGING = {

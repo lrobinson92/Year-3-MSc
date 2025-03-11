@@ -28,10 +28,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 samesite="Lax",
                 path="/",
             )
-            del response.data["access"]
-            del response.data["refresh"]
+            # Include tokens in the response body
+            response.data["access_token"] = access_token
+            response.data["refresh_token"] = refresh_token
         return response
-
 
 #@method_decorator(csrf_exempt, name='dispatch')  # Only if CSRF protection is causing issues, otherwise remove this
 class LogoutView(View):

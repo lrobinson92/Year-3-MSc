@@ -133,10 +133,12 @@ export const login = (email, password) => async dispatch => {
 
         dispatch({
             type: LOGIN_SUCCESS,
-            payload: res.data
+            payload: {
+                access: res.data.access_token,
+                refresh: res.data.refresh_token,
+                user: res.data.user
+            }
         });
-
-        console.log("Login response:", res.data);  // Debugging line
 
         dispatch(load_user());
     } catch (err) {
@@ -204,6 +206,7 @@ export const logout = () => async dispatch => {
     const config = {
         headers: {
             'X-CSRFToken': getCSRFToken(),  // Include CSRF token in headers
+            'Content-Type': 'application/json'        
         },
         withCredentials: true,
     };

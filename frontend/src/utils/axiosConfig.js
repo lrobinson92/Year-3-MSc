@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export const getCSRFToken = () => {
     let csrfToken = null;
@@ -15,62 +16,42 @@ export const getCSRFToken = () => {
     return csrfToken;
 };
 
-export function getCookie(name) {
-    const cookies = document.cookie.split('; ');
-    console.log("🔍 All Cookies:", cookies);  // Debugging
-
-    for (let cookie of cookies) {
-        const [cookieName, cookieValue] = cookie.split('=');
-        console.log(`🔍 Checking Cookie: ${cookieName} = ${cookieValue}`);  // Debugging
-
-        if (cookieName === name) {
-            return decodeURIComponent(cookieValue);
-        }
-    }
-    return null;
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.withCredentials = true;  // Include credentials in requests
 axios.defaults.headers.common['X-CSRFToken'] = getCookie('csrftoken');  // Include CSRF token in headers
 
-// Explicit function to get OneDrive token
-export const getOneDriveAccessToken = () => {
-    const token = getCookie('onedrive_access_token');
-    console.log("🛠 OneDrive Token Retrieved:", token);  // Debugging
-    return token;
-};
-
-// Attach to window for debugging in the browser console
-window.getOneDriveAccessToken = getOneDriveAccessToken;
-window.getCookie = function (name) {
-    const cookies = document.cookie.split('; ');
-    for (let cookie of cookies) {
-        const [cookieName, cookieValue] = cookie.split('=');
-        if (cookieName === name) {
-            return decodeURIComponent(cookieValue);
-        }
-    }
-    return null;
-};
-
+const csrfToken = Cookies.get('csrftoken');
+if (csrfToken) {
+    axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
+}
 
 // Base Axios instance with credentials included
 const axiosInstance = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
     headers: { 'Content-Type': 'application/json' },
     withCredentials: true,  // Ensure cookies are always sent
+    withXSRFToken: true,
+    xsrfCookieName: "csrftoken",
+    xsrfHeaderName: "X-CSRFToken",
 });
 
-// Attach Authorization Header for OneDrive Requests
+// Automatically refresh the access token if it expires
 axiosInstance.interceptors.response.use(
-    response => response,
-    async error => {
+    (response) => response,
+    async (error) => {
         const originalRequest = error.config;
 
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+        // If access token is expired, try refreshing it
+        if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-            
+
             try {
                 // Call refresh endpoint (cookie-based)
                 await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/refresh/`, {}, { withCredentials: true });
@@ -83,27 +64,8 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                console.log("🔄 Refreshing OneDrive token...");
-                const refreshRes = await axios.post(`${process.env.REACT_APP_API_URL}/api/onedrive/refresh-token/`, {}, { withCredentials: true });
-
-                if (refreshRes.data.access_token) {
-                    document.cookie = `onedrive_access_token=${refreshRes.data.access_token}; path=/;`;
-                    originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access_token}`;
-                    return axiosInstance(originalRequest);
-                }
-            } catch (refreshError) {
-                console.error("❌ OneDrive Token refresh failed", refreshError);
-                return Promise.reject(refreshError);
-            }
-        }
-
         return Promise.reject(error);
     }
 );
 
-// ✅ Export axiosInstance as the default export
 export default axiosInstance;

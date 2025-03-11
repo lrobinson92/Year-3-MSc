@@ -2,11 +2,13 @@ import requests
 from rest_framework import status, generics, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.db.models import Q  # Import Q
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -48,6 +50,13 @@ def refresh_onedrive_token(user):
         return token_json["access_token"]
     else:
         return None  # Refresh failed, user may need to log in again
+    
+def csrf_token_view(request):
+    """Return the CSRF token in a JSON response and set the CSRF cookie."""
+    response = JsonResponse({"csrfToken": get_token(request)})
+    response["X-CSRFToken"] = get_token(request)  # Add CSRF token to headers
+    response.set_cookie("csrftoken", get_token(request), samesite="Lax", secure=False, httponly=False)  # Ensure it's set
+    return response
 
 User = get_user_model()
 
@@ -73,6 +82,11 @@ class TeamViewSet(viewsets.ModelViewSet):
     def invite_member(self, request, pk=None):
         team = self.get_object()
         email = request.data.get('email')
+        role = request.data.get('role', 'member')
+
+        if role not in dict(TeamMembership.ROLE_CHOICES):
+            return Response({'error': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,7 +100,7 @@ class TeamViewSet(viewsets.ModelViewSet):
             return Response({'error': 'User is already a member of the team'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Add the user to the team
-        TeamMembership.objects.create(user=user, team=team, role='member')
+        TeamMembership.objects.create(user=user, team=team, role=role)
 
         # Send an email notification
         current_site = get_current_site(request)
@@ -105,9 +119,91 @@ class TeamViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='users-in-same-team')
     def users_in_same_team(self, request, pk=None):
         team = self.get_object()
+        memberships = TeamMembership.objects.filter(team=team).select_related('user')
         users = UserAccount.objects.filter(team_memberships__team=team)
         serializer = UserCreateSerializer(users, many=True)
-        return Response(serializer.data)
+
+        data = [
+            {
+                "user": membership.user.id,  # User ID
+                "user_name": membership.user.name,  # User Name
+                "role": membership.role  # Include role
+            }
+            for membership in memberships
+        ]
+        
+        return Response(data)
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
+    def update_member_role(self, request, pk=None):
+        """ Allow only the team owner to update a member’s role. """
+        
+        # ✅ Correctly extract the CSRF token from headers (Django normalizes it)
+        csrf_token = request.META.get("HTTP_X_CSRFTOKEN")  # Instead of 'X-CSRFToken'
+
+        print(f"🔍 Request Headers: {request.headers}")
+        print(f"🔍 CSRF Token Received: {csrf_token}")
+
+        if not csrf_token:
+            return Response({'error': 'CSRF token missing'}, status=status.HTTP_403_FORBIDDEN)
+
+        team = self.get_object()
+
+        # ✅ Ensure the requesting user is the owner
+        is_owner = TeamMembership.objects.filter(user=request.user, team=team, role='owner').exists()
+        
+        if not is_owner:
+            return Response({'error': 'Only the team owner can update member roles'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = request.data.get('user_id')
+        new_role = request.data.get('role')
+
+        if new_role not in dict(TeamMembership.ROLE_CHOICES):
+            return Response({'error': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            membership = TeamMembership.objects.get(user_id=user_id, team=team)
+            
+            # Prevent owners from demoting themselves
+            if membership.user == request.user:
+                return Response({'error': 'You cannot change your own role'}, status=status.HTTP_400_BAD_REQUEST)
+
+            membership.role = new_role
+            membership.save()
+            return Response({'message': f'User role updated to {new_role} successfully'}, status=status.HTTP_200_OK)
+        except TeamMembership.DoesNotExist:
+            return Response({'error': 'User is not in this team'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
+    def remove_member(self, request, pk=None):
+        """ Allow only the team owner to remove a member. """
+        team = self.get_object()
+
+        # Check if the requesting user is the owner
+        if not TeamMembership.objects.filter(user=request.user, team=team, role='owner').exists():
+            return Response({'error': 'Only the team owner can remove members'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = request.data.get('user_id')
+
+        try:
+            membership = TeamMembership.objects.get(user_id=user_id, team=team)
+
+            # Prevent owners from removing themselves
+            if membership.user == request.user:
+                return Response({'error': 'You cannot remove yourself as an owner'}, status=status.HTTP_400_BAD_REQUEST)
+
+            membership.delete()
+            return Response({'message': 'User removed from team successfully'}, status=status.HTTP_200_OK)
+        except TeamMembership.DoesNotExist:
+            return Response({'error': 'User is not in this team'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class IsTeamOwner(BasePermission):
+    """ Custom permission: Only team owners can edit roles or remove members. """
+    def has_object_permission(self, request, view, obj):
+        return TeamMembership.objects.filter(user=request.user, team=obj, role='owner').exists()
+
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
@@ -305,7 +401,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Document.objects.filter(team__team_memberships__user=user)
+        return Document.objects.filter(team__team_memberships__user=user) | Document.objects.filter(owner=user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

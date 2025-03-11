@@ -1,25 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import { onedriveLogin, uploadDocument } from '../actions/onedrive';
-import { useEffect } from "react";
+import axios from '../utils/axiosConfig';
 
 const ViewDocuments = ({ isAuthenticated, onedriveLogin, uploadDocument }) => {
     
-    const fetchOneDriveFiles = async () => {
-        const response = await fetch("http://localhost:8000/api/onedrive/files", {
-            credentials: "include",  // Sends cookies (access token)
-        });
-        const data = await response.json();
-        console.log(data);
-    };
+    const [documents, setDocuments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     
-    const [searchParams] = useSearchParams();
-    const onedriveToken = searchParams.get("onedrive_token");
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/documents/`, {
+                    withCredentials: true,  // Include credentials in the request
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                console.log("API Response:", res.data);  // Check if JSON is returned
+
+                setDocuments(res.data);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch documents');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDocuments();
+    }, []);
 
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
+    }
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
     }
 
     const handleLogin = () => {
@@ -46,6 +73,22 @@ const ViewDocuments = ({ isAuthenticated, onedriveLogin, uploadDocument }) => {
                         </div>
                         <button onClick={handleLogin} className="btn btn-primary">Login to OneDrive</button>
                         <input type="file" onChange={handleFileUpload} />
+                        <div className="row">
+                            {Array.isArray(documents) && documents.length > 0 ? (
+                                documents.map((document) => (
+                                    <div className="col-md-4 mb-3" key={document.id}>
+                                        <div className="card p-3 view">
+                                            <h4>{document.title}</h4>
+                                            <p>Team: {document.team_name}</p>
+                                            <p>Owner: {document.owner_name}</p>
+                                            <a href={document.file_url} target="_blank" rel="noopener noreferrer">View Document</a>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No documents available</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
